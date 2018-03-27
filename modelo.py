@@ -11,7 +11,6 @@ presencas = {}
 ucs = {}
 
 
-
 # Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
 for elem in alunos_json:
     for al in elem:
@@ -63,13 +62,42 @@ for al in alunos:
                 turno = tuplo[0]
                 presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
 
-pprint.pprint(presencas)
+#pprint.pprint(presencas)
 
-# for dia in slots:
-#     print dia
-#     for hora in slots[dia]:
-#         print hora,
-#         print slots[dia][hora]       
-        
-            
 
+##################### RESTRICOES ######################################
+
+#1 - Os valores possiveis sao 0 ou 1
+
+values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) for al in presencas for uc in presencas[al] for turno in presencas[al][uc]]
+
+#2 - Um aluno so pode ser atribuido a um e um so turno
+
+um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al]]
+
+#3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
+
+capacidade_maxima_c = [Sum([ presencas[al][uc][turno] for al in presencas]) <=  for al in presencas for uc in presencas[al]]
+
+print capacidade_maxima_c
+
+
+########################### SOLVER ############################
+s = Solver()
+s.add(values_c + um_turno_c)
+
+if s.check() == sat:
+    m = s.model()
+    r = {}
+    for al in presencas:
+        if al not in r:
+            r[al] = {}
+        for uc in presencas[al]:
+            if uc not in r[al]:
+                r[al][uc] = {} 
+            for turno in presencas[al][uc]:
+                #if turno == 1:
+                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
+    pprint.pprint(r)
+else:
+    print "failed to solve"
