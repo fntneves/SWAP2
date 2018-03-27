@@ -77,14 +77,17 @@ um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) 
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
-capacidade_maxima_c = [Sum([ presencas[al][uc][turno] for al in presencas]) <=  for al in presencas for uc in presencas[al]]
-
-print capacidade_maxima_c
+capacidade_maxima_c = []
+for al in presencas:
+    for uc in presencas[al]:
+         for turno in presencas[al][uc]:
+             if (uc in presencas[al]) and (turno in presencas[al][uc])
+                capacidade_maxima_c += (Sum([ presencas[al][uc][turno] for al in presencas]) <= 5)
 
 
 ########################### SOLVER ############################
 s = Solver()
-s.add(values_c + um_turno_c)
+s.add(values_c + um_turno_c + capacidade_maxima_c)
 
 if s.check() == sat:
     m = s.model()
