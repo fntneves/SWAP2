@@ -48,6 +48,10 @@ for elem in horario_json:
     n_dia += 1
 
 
+n_al = 0
+n_uc = 0
+n_turno = 0
+
 for al in alunos:
     if al not in presencas:
         presencas[al] = {}
@@ -57,7 +61,9 @@ for al in alunos:
                 presencas[al][uc] = {}
             for tuplo in ucs[uc]:
                 turno = tuplo[0]
-                presencas[al][uc][turno] = Int('p')
+                presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
+
+pprint.pprint(presencas)
 
 # for dia in slots:
 #     print dia
