@@ -78,9 +78,9 @@ values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) fo
 um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al]]
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
-
 # PAULO
-#capacidade_maxima_c = [ Sum([presencas[al][uc][tuplo[0]] for al in presencas if uc in presencas[al]]) <= tuplo[1] for uc in ucs  for tuplo in ucs[uc]]
+
+#capacidade_maxima_c = [ Sum([presencas[al][uc][turno] for al in presencas if uc in presencas[al]]) <= ucs[uc][turno] for uc in ucs  for turno in ucs[uc]]
 
 # ZE
 lista_capacidades = {}
@@ -93,7 +93,7 @@ for al in presencas:
                 lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
-pprint.pprint(lista_capacidades)
+#pprint.pprint(lista_capacidades)
 capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= ucs[uc][turno] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
 
 
