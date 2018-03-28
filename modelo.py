@@ -33,9 +33,12 @@ for elem in horario_json:
         for uc in elem[dia]:
             for codigo in uc:
                 if codigo not in ucs:
-                    ucs[codigo] = [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]
-                else:
-                    ucs[codigo] += [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]                    
+                    ucs[codigo] = {}
+                ucs[codigo][uc[codigo]['Turno']] = uc[codigo]['Capacidade']
+                # if codigo not in ucs:
+                #     ucs[codigo] = [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]
+                # else:
+                #     ucs[codigo] += [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]                    
                 horaI = int(uc[codigo]['HoraI'][:2])
                 horaF = int(uc[codigo]['HoraF'][:2])
 
@@ -58,8 +61,7 @@ for al in alunos:
         if uc in ucs:
             if uc not in presencas[al]:
                 presencas[al][uc] = {}
-            for tuplo in ucs[uc]:
-                turno = tuplo[0]
+            for turno in ucs[uc]:
                 presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
 
 #pprint.pprint(presencas)
@@ -76,13 +78,18 @@ values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) fo
 um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al]]
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
-
-capacidade_maxima_c = []
+lista_capacidades = {}
 for al in presencas:
     for uc in presencas[al]:
-         for turno in presencas[al][uc]:
-             if (uc in presencas[al]) and (turno in presencas[al][uc])
-                capacidade_maxima_c += (Sum([ presencas[al][uc][turno] for al in presencas]) <= 5)
+        if uc not in lista_capacidades:
+            lista_capacidades[uc] = {}
+        for turno in presencas[al][uc]:
+            if turno not in lista_capacidades[uc]:
+                lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
+            else:
+                lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
+pprint.pprint(lista_capacidades)
+capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= ucs[uc][turno] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
 
 
 ########################### SOLVER ############################
@@ -104,3 +111,20 @@ if s.check() == sat:
     pprint.pprint(r)
 else:
     print "failed to solve"
+
+# s.add(capacidade_maxima_c)
+# if s.check() == sat:
+#     m = s.model()
+#     r = {}
+#     for al in presencas:
+#         if al not in r:
+#             r[al] = {}
+#         for uc in presencas[al]:
+#             if uc not in r[al]:
+#                 r[al][uc] = {} 
+#             for turno in presencas[al][uc]:
+#                 #if turno == 1:
+#                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
+#     pprint.pprint(r)
+# else:
+#     print "failed to solve"
