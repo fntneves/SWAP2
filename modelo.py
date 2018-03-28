@@ -96,6 +96,7 @@ for al in presencas:
 #pprint.pprint(lista_capacidades)
 capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= ucs[uc][turno] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
 
+#4 Aulas praticas sem sobreposicoes
 
 ########################### SOLVER ############################
 s = Solver()
@@ -114,12 +115,7 @@ if s.check() == sat:
                 #if turno == 1:
                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
 
-    #pprint.pprint(r)
-    for al in presencas:
-        for uc in presencas[al]:
-            for turno in presencas[al][uc]:
-                if uc == 'H502N1' and turno == 'PL1':
-                    print al,uc,turno
+    pprint.pprint(r)
 else:
     print "failed to solve"
 
