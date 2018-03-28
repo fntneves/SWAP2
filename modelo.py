@@ -77,13 +77,7 @@ um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) 
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
-capacidade_maxima_c = []
-for al in presencas:
-    for uc in presencas[al]:
-         for turno in presencas[al][uc]:
-             if (uc in presencas[al]) and (turno in presencas[al][uc])
-                capacidade_maxima_c += (Sum([ presencas[al][uc][turno] for al in presencas]) <= 5)
-
+capacidade_maxima_c = [ Sum([presencas[al][uc][tuplo[0]] for al in presencas if uc in presencas[al]]) <= tuplo[1] for uc in ucs  for tuplo in ucs[uc]]
 
 ########################### SOLVER ############################
 s = Solver()
@@ -101,6 +95,12 @@ if s.check() == sat:
             for turno in presencas[al][uc]:
                 #if turno == 1:
                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
-    pprint.pprint(r)
+
+    #pprint.pprint(r)
+    for al in presencas:
+        for uc in presencas[al]:
+            for turno in presencas[al][uc]:
+                if uc == 'H502N1' and turno == 'PL1':
+                    print al,uc,turno
 else:
     print "failed to solve"
