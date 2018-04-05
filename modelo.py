@@ -1,4 +1,4 @@
-import sys, json, pprint
+import sys, json, pprint, time
 from z3 import *
 
 alunos_json  = json.load(open(sys.argv[1]))
@@ -22,13 +22,10 @@ for elem in alunos_json:
 
 
 n_dia = 0
-n_hora = 8
 
 
-#Carrega o horario e preenche os dicionarios slots e o ucs, slots --> {0:{9:[("HXXXX",TP1)]}}, ucs --> {Hxxxx:[(TP2,24)]}
+#Carrega o horario e preenche os dicionarios slots e o ucs, slots --> {Hxxxx:{TPX:[(DIa,Hora,Slots_1h)]}}, ucs --> {Hxxxx:{TPx:Capacidade}}
 for elem in horario_json: 
-    if n_dia not in slots:
-        slots[n_dia] = {}
     for dia in elem:
         for uc in elem[dia]:
             for codigo in uc:
@@ -41,14 +38,15 @@ for elem in horario_json:
                 #     ucs[codigo] += [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]                    
                 horaI = int(uc[codigo]['HoraI'][:2])
                 horaF = int(uc[codigo]['HoraF'][:2])
-
+                if codigo not in slots:
+                    slots[codigo] = {}
                 for hora in range(horaI,horaF):
-                    if hora not in slots[n_dia]:
-                        slots[n_dia][hora] = [(codigo,uc[codigo]['Turno'])]
-                    else:
-                        slots[n_dia][hora] += [(codigo,uc[codigo]['Turno'])]
+                    turno = uc[codigo]['Turno']
+                    if turno not in slots[codigo]:
+                        slots[codigo][turno] = (n_dia,horaI,horaF-horaI)
     n_dia += 1
 
+#pprint.pprint(slots)
 
 n_al = 0
 n_uc = 0
@@ -94,15 +92,38 @@ for al in presencas:
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
 #pprint.pprint(lista_capacidades)
-capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= ucs[uc][turno] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
-
+capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= 57 for uc in lista_capacidades for turno in lista_capacidades[uc] ]
+ucs[uc][turno]
 #4 Aulas praticas sem sobreposicoes
 
 ########################### SOLVER ############################
 s = Solver()
-s.add(values_c + um_turno_c + capacidade_maxima_c)
+s.add(values_c)
+x = time.clock()
+print 'Solving constraint 1'
+if s.check() != sat:
+    print 'Failed to solver constraint 1'
+    sys.exit()
+
+x1 = time.clock()
+print x1 - x
+
+s.add(um_turno_c)
+
+print 'Solving constraint 2'
+if s.check() != sat:
+    print 'Failed to solver constraint 2'
+    sys.exit()
+x = time.clock()
+
+print x - x1
+s.add(capacidade_maxima_c)
+
+print 'Solving constraint 3'
 
 if s.check() == sat:
+    x1 = time.clock()
+    print x1 - x
     m = s.model()
     r = {}
     for al in presencas:
@@ -114,8 +135,19 @@ if s.check() == sat:
             for turno in presencas[al][uc]:
                 #if turno == 1:
                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
-
-    pprint.pprint(r)
+    alocacoes_finais = {}
+    for al in r:
+        for u in r[al]:
+            if u not in alocacoes_finais:
+                alocacoes_finais[u] = {}
+            for t in r[al][u]:
+                if r[al][u][t] == 1:
+                    if t not in alocacoes_finais[u]:
+                        alocacoes_finais[u][t] = 1
+                    else:
+                        alocacoes_finais[u][t] += 1
+                
+    pprint.pprint(alocacoes_finais)
 else:
     print "failed to solve"
 
