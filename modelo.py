@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys, json, pprint, time
 from z3 import *
 
@@ -8,7 +9,6 @@ horario_json = json.load(open(sys.argv[2]))
 alunos = {}
 slots = {}
 presencas = {}
-ucs = {}
 
 
 # Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
@@ -22,32 +22,28 @@ for elem in alunos_json:
 
 
 n_dia = 0
+minimo_hora = 100
+maximo_hora = 0
 
-
-#Carrega o horario e preenche os dicionarios slots e o ucs, slots --> {Hxxxx:{TPX:[(DIa,Hora,Slots_1h)]}}, ucs --> {Hxxxx:{TPx:Capacidade}}
+#Carrega o horario e preenche os dicionarios slots, slots --> {Hxxxx:{TPX:[(Dia,Hora,Slots_1h,Capacidade)]}}}
 for elem in horario_json: 
     for dia in elem:
         for uc in elem[dia]:
-            for codigo in uc:
-                if codigo not in ucs:
-                    ucs[codigo] = {}
-                ucs[codigo][uc[codigo]['Turno']] = uc[codigo]['Capacidade']
-                # if codigo not in ucs:
-                #     ucs[codigo] = [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]
-                # else:
-                #     ucs[codigo] += [(uc[codigo]['Turno'],uc[codigo]['Capacidade'])]                    
+            for codigo in uc:               
                 horaI = int(uc[codigo]['HoraI'][:2])
                 horaF = int(uc[codigo]['HoraF'][:2])
+                minimo_hora = min(horaI,minimo_hora)
+                maximo_hora = max(horaF,maximo_hora)
                 if codigo not in slots:
                     slots[codigo] = {}
-                for hora in range(horaI,horaF):
-                    turno = uc[codigo]['Turno']
-                    if turno not in slots[codigo]:
-                        slots[codigo][turno] = (n_dia,horaI,horaF-horaI)
+                turno = uc[codigo]['Turno']
+                if turno not in slots[codigo]:
+                    slots[codigo][turno] = (n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])
     n_dia += 1
-
+maximo_dia = n_dia
 #pprint.pprint(slots)
 
+print maximo_dia
 n_al = 0
 n_uc = 0
 n_turno = 0
@@ -56,14 +52,11 @@ for al in alunos:
     if al not in presencas:
         presencas[al] = {}
     for uc in alunos[al]:
-        if uc in ucs:
+        if uc in slots:
             if uc not in presencas[al]:
                 presencas[al][uc] = {}
-            for turno in ucs[uc]:
+            for turno in slots[uc]:
                 presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
-
-#pprint.pprint(presencas)
-
 
 ##################### RESTRICOES ######################################
 
@@ -71,14 +64,12 @@ for al in alunos:
 
 values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) for al in presencas for uc in presencas[al] for turno in presencas[al][uc]]
 
+
 #2 - Um aluno so pode ser atribuido a um e um so turno
 
 um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al]]
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
-# PAULO
-
-#capacidade_maxima_c = [ Sum([presencas[al][uc][turno] for al in presencas if uc in presencas[al]]) <= ucs[uc][turno] for uc in ucs  for turno in ucs[uc]]
 
 # ZE
 lista_capacidades = {}
@@ -91,10 +82,30 @@ for al in presencas:
                 lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
-#pprint.pprint(lista_capacidades)
-capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= 57 for uc in lista_capacidades for turno in lista_capacidades[uc] ]
-ucs[uc][turno]
+capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][3] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
+
 #4 Aulas praticas sem sobreposicoes
+# Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
+# Por ultimo, a soma dessa lista com as Ucs num determinado dia, numa determinada hora tem de ser no maximo 1, ou seja, tem de haver no maximo uma alocaçao
+
+turnos = {}
+for al in presencas:
+    if al not in turnos:
+        turnos[al] = {}
+    for uc in presencas[al]:
+        for t in presencas[al][uc]:
+            for d in range(maximo_dia):
+                if d not in turnos[al]:
+                    turnos[al][d] = {}
+                for h in range(minimo_hora,maximo_hora):
+                    if h not in turnos[al][d]:
+                        turnos[al][d][h] = []
+                    tuplo = slots[uc][t]
+                    if tuplo[0] == d and (tuplo[1] <= h < (tuplo[1] + tuplo[2])):
+                        turnos[al][d][h] += [presencas[al][uc][t]]
+
+sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d]]
+        
 
 ########################### SOLVER ############################
 s = Solver()
@@ -117,13 +128,22 @@ if s.check() != sat:
 x = time.clock()
 
 print x - x1
+
+s.add(sem_sobreposicoes_c)
+print 'Solving constraint 3'
+if s.check() != sat:
+    print 'Failed to solver constraint 3'
+    sys.exit()
+x1 = time.clock()
+print x1 - x
+
 s.add(capacidade_maxima_c)
 
-print 'Solving constraint 3'
+print 'Solving constraint 4'
 
 if s.check() == sat:
-    x1 = time.clock()
-    print x1 - x
+    x = time.clock()
+    print x-x1
     m = s.model()
     r = {}
     for al in presencas:
@@ -146,8 +166,8 @@ if s.check() == sat:
                         alocacoes_finais[u][t] = 1
                     else:
                         alocacoes_finais[u][t] += 1
-                
-    pprint.pprint(alocacoes_finais)
+    #pprint.pprint(alocacoes_finais)
+    #pprint.pprint(r)
 else:
     print "failed to solve"
 
