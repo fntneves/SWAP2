@@ -166,8 +166,8 @@ if s.check() == sat:
                         alocacoes_finais[u][t] = 1
                     else:
                         alocacoes_finais[u][t] += 1
-    #pprint.pprint(alocacoes_finais)
-    #pprint.pprint(r)
+    pprint.pprint(alocacoes_finais)
+    pprint.pprint(r)
 else:
     print "failed to solve"
 
