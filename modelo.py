@@ -38,12 +38,13 @@ for elem in horario_json:
                     slots[codigo] = {}
                 turno = uc[codigo]['Turno']
                 if turno not in slots[codigo]:
-                    slots[codigo][turno] = (n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])
+                    slots[codigo][turno] = [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
+                else:
+                    slots[codigo][turno] += [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
     n_dia += 1
 maximo_dia = n_dia
-#pprint.pprint(slots)
+pprint.pprint(slots)
 
-print maximo_dia
 n_al = 0
 n_uc = 0
 n_turno = 0
@@ -82,7 +83,7 @@ for al in presencas:
                 lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
-capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][3] for uc in lista_capacidades for turno in lista_capacidades[uc] ]
+capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno]))]
 
 #4 Aulas praticas sem sobreposicoes
 # Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
@@ -101,13 +102,14 @@ for al in presencas:
                     if h not in turnos[al][d]:
                         turnos[al][d][h] = []
                     tuplo = slots[uc][t]
-                    if tuplo[0] == d and (tuplo[1] <= h < (tuplo[1] + tuplo[2])):
-                        turnos[al][d][h] += [presencas[al][uc][t]]
+                    for i in range(len(tuplo)):
+                        if tuplo[i][0] == d and (tuplo[i][1] <= h < (tuplo[i][1] + tuplo[i][2])):
+                            turnos[al][d][h] += [presencas[al][uc][t]]
 
-sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d]]
-        
+sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d]] 
 
 ########################### SOLVER ############################
+print 'Numero de alunos: %s' % len(alunos)
 s = Solver()
 s.add(values_c)
 x = time.clock()
