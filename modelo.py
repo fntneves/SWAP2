@@ -43,7 +43,7 @@ for elem in horario_json:
                     slots[codigo][turno] += [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
     n_dia += 1
 maximo_dia = n_dia
-pprint.pprint(slots)
+#pprint.pprint(slots)
 
 n_al = 0
 n_uc = 0
@@ -168,8 +168,9 @@ if s.check() == sat:
                         alocacoes_finais[u][t] = 1
                     else:
                         alocacoes_finais[u][t] += 1
-    pprint.pprint(alocacoes_finais)
-    pprint.pprint(r)
+    #pprint.pprint(alocacoes_finais)
+    #pprint.pprint(r)
+    #print s.sexpr()
 else:
     print "failed to solve"
 
