@@ -5,6 +5,7 @@ from z3 import *
 alunos_json  = json.load(open(sys.argv[1]))
 horario_json = json.load(open(sys.argv[2]))
 
+#A[0-9][0-9][0-9][0-9][0-9]
 
 alunos = {}
 slots = {}
@@ -168,7 +169,7 @@ if s.check() == sat:
                         alocacoes_finais[u][t] = 1
                     else:
                         alocacoes_finais[u][t] += 1
-    #pprint.pprint(alocacoes_finais)
+    pprint.pprint(alocacoes_finais)
     #pprint.pprint(r)
     #print s.sexpr()
 else:
