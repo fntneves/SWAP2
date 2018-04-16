@@ -15,6 +15,8 @@ presencas = {}
 # Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
 for elem in alunos_json:
     for al in elem:
+        if al in alunos:
+            print 'Aluno %s repetido' % al
         for uc in elem[al]:
             if al not in alunos:
                 alunos[al] = [uc]
@@ -156,21 +158,34 @@ if s.check() == sat:
             if uc not in r[al]:
                 r[al][uc] = {} 
             for turno in presencas[al][uc]:
-                #if turno == 1:
-                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
+                aloc = m.evaluate(presencas[al][uc][turno])
+                if aloc == 1:
+                    r[al][uc][turno] = aloc
     alocacoes_finais = {}
-    for al in r:
+    
+    #alunos alocados a todas as cadeiras que estao inscritos
+    total_aloc = 0
+    n_tur = 0
+    for al in r:  
         for u in r[al]:
             if u not in alocacoes_finais:
                 alocacoes_finais[u] = {}
             for t in r[al][u]:
                 if r[al][u][t] == 1:
+                    n_tur += 1
                     if t not in alocacoes_finais[u]:
                         alocacoes_finais[u][t] = 1
                     else:
                         alocacoes_finais[u][t] += 1
+        #calcular alunos alocados a todas as cadeiras que estao inscritos  
+        if n_tur == len(r[al]):
+            total_aloc += 1
+            n_tur = 0
+
     pprint.pprint(alocacoes_finais)
-    #pprint.pprint(r)
+    pprint.pprint(r)
+    print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
+    print s.statistics()
     #print s.sexpr()
 else:
     print "failed to solve"
