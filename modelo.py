@@ -11,7 +11,7 @@ alunos = {}
 slots = {}
 presencas = {}
 
-
+total_alocacoes = 0
 # Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
 for elem in alunos_json:
     for al in elem:
@@ -46,6 +46,11 @@ for elem in horario_json:
                     slots[codigo][turno] += [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
     n_dia += 1
 maximo_dia = n_dia
+
+for al in alunos:
+    for uc in alunos[al]:
+        if uc in slots:
+            total_alocacoes += 1
 #pprint.pprint(slots)
 
 n_al = 0
@@ -164,7 +169,8 @@ if s.check() == sat:
     alocacoes_finais = {}
     
     #alunos alocados a todas as cadeiras que estao inscritos
-    total_aloc = 0
+    total_alocados = 0
+    al_aloc = 0
     n_tur = 0
     for al in r:  
         for u in r[al]:
@@ -172,6 +178,7 @@ if s.check() == sat:
                 alocacoes_finais[u] = {}
             for t in r[al][u]:
                 if r[al][u][t] == 1:
+                    total_alocados += 1
                     n_tur += 1
                     if t not in alocacoes_finais[u]:
                         alocacoes_finais[u][t] = 1
@@ -179,12 +186,14 @@ if s.check() == sat:
                         alocacoes_finais[u][t] += 1
         #calcular alunos alocados a todas as cadeiras que estao inscritos  
         if n_tur == len(r[al]):
-            total_aloc += 1
+            al_aloc += 1
             n_tur = 0
 
     pprint.pprint(alocacoes_finais)
     pprint.pprint(r)
-    print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
+    print 'Alunos alocados a todas as ucs: %s' % al_aloc
+    print 'Numero de alocacoes efetuadas %s' % total_alocados
+    print 'Numero de alocacoes possiveis %s' % total_alocacoes
     print s.statistics()
     #print s.sexpr()
 else:
