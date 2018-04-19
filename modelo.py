@@ -119,34 +119,81 @@ sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in tur
 ########################### SOLVER ############################
 print 'Numero de alunos: %s' % len(alunos)
 s = Solver()
+
+# Restricao 1
 s.add(values_c)
 x = time.clock()
 print 'Solving constraint 1'
 if s.check() != sat:
     print 'Failed to solver constraint 1'
     sys.exit()
+else:
+    # Estado do solver
+    m = s.model()
+    r = {}
+    for al in presencas:
+        if al not in r:
+            r[al] = {}
+        for uc in presencas[al]:
+            if uc not in r[al]:
+                r[al][uc] = {} 
+            for turno in presencas[al][uc]:
+                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
+    pprint.pprint(r)
 
 x1 = time.clock()
 print x1 - x
 
+# Restricao 2
 s.add(um_turno_c)
 
 print 'Solving constraint 2'
 if s.check() != sat:
     print 'Failed to solver constraint 2'
     sys.exit()
-x = time.clock()
+else:
+    # Estado do solver
+    m = s.model()
+    r = {}
+    for al in presencas:
+        if al not in r:
+            r[al] = {}
+        for uc in presencas[al]:
+            if uc not in r[al]:
+                r[al][uc] = {} 
+            for turno in presencas[al][uc]:
+                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
+    pprint.pprint(r)
 
+x = time.clock()
 print x - x1
 
+
+#Restricao 3
 s.add(sem_sobreposicoes_c)
 print 'Solving constraint 3'
 if s.check() != sat:
     print 'Failed to solver constraint 3'
     sys.exit()
+else:
+    # Estado do solver
+    m = s.model()
+    r = {}
+    for al in presencas:
+        if al not in r:
+            r[al] = {}
+        for uc in presencas[al]:
+            if uc not in r[al]:
+                r[al][uc] = {} 
+            for turno in presencas[al][uc]:
+                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
+    pprint.pprint(r)
+
+
 x1 = time.clock()
 print x1 - x
 
+# Restricao 4
 s.add(capacidade_maxima_c)
 
 print 'Solving constraint 4'
@@ -164,8 +211,7 @@ if s.check() == sat:
                 r[al][uc] = {} 
             for turno in presencas[al][uc]:
                 aloc = m.evaluate(presencas[al][uc][turno])
-                if aloc == 1:
-                    r[al][uc][turno] = aloc
+                r[al][uc][turno] = aloc
     alocacoes_finais = {}
     
     #alunos alocados a todas as cadeiras que estao inscritos

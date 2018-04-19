@@ -6,7 +6,7 @@
             {"H502N3":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"TP2"}},
             {"H502N4":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"TP1"}},
             {"H502N2":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP1"}},
-            {"H502N1":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP1"}},
+            {"H502N1":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP2"}},
             {"H502N4":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP2"}},
             {"H502N3":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"PL6"}}
         ]
