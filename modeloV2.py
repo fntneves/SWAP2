@@ -151,6 +151,14 @@ if s.check() != sat:
 x = time.clock()
 print x - x1
 
+s.add(um_turnoTP_c)
+print 'Solving constraint obrigatório um turno TP'
+if s.check() != sat:
+    print 'Failed to solver constraint obrigatório um turno TP'
+    sys.exit()
+x1 = time.clock()
+print x1 - x
+
 s.add(sem_sobreposicoes_c)
 print 'Solving constraint sem sobreposicções'
 if s.check() != sat:
@@ -165,29 +173,9 @@ if s.check() != sat:
     print 'Failed to solver constraint capacidade maxima'
     sys.exit()
 x1 = time.clock()
-print x1 - x
+print x1-x
 
-# aqui faço push para guardar o estado caso nao resultem as restrições
-s.push()
-s.add(um_turnoTP_c)
-print 'Solving constraint obrigatório um turno TP'
-if s.check() != sat:
-    print 'Failed to solver constraint obrigatório um turno TP'
-    # como falhou , aqui faço o pop
-    s.pop()
-    s.add_soft(um_turnoTP_c,100)
-    if s.check() == sat:
-        x1 = time.clock()
-        print x1-x
-        m = s.model()
-    else: 
-        print('failed to solve!') 
-        sys.exit() 
-else:
-    x1 = time.clock()
-    print x1-x
-    m = s.model()
-
+m = s.model()
 r = {}
 for al in presencas:
     if al not in r:
@@ -199,12 +187,14 @@ for al in presencas:
             aloc = m.evaluate(presencas[al][uc][turno])
             if aloc == 1:
                 r[al][uc][turno] = aloc
-alocacoes_finais = {}
 
 #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
 n_tur = 0
 nao_alocados = []
+nao_alocados_t = []
+alocacoes_finais = {}
+
 for al in r:  
     for u in r[al]:
         if u not in alocacoes_finais:
@@ -216,36 +206,25 @@ for al in r:
                     alocacoes_finais[u][t] = 1
                 else:
                     alocacoes_finais[u][t] += 1
-    #calcular alunos alocados a todas as cadeiras que estao inscritos  
-    if n_tur >= len(r[al]):
+    if n_tur >= len(r[al]) :
         total_aloc += 1
         n_tur = 0
-    else:
-        #adicionar alunos não colocados nesta lista
-        nao_alocados.append(al)
+
+#calcular alunos alocados a todas as cadeiras que estao inscritos  
+for al in alunos:
+    for uc in alunos[al]:
+        if len(uc) == 6 and len(r[al][uc]) == 0 and al not in nao_alocados:
+            nao_alocados.append(al)
+        if len(uc) > 6 and len(r[al][uc]) == 0 and al not in nao_alocados_t:
+            nao_alocados_t.append(al)
 
 
 pprint.pprint(alocacoes_finais)
 # pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
-print 'Alunos não alocados: '
+print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
+print 'Alunos não alocados a teoricas: '
+pprint.pprint(nao_alocados_t)
 #print s.statistics()
 # print s.sexpr()
-
-# s.add(capacidade_maxima_c)
-# if s.check() == sat:
-#     m = s.model()
-#     r = {}
-#     for al in presencas:
-#         if al not in r:
-#             r[al] = {}
-#         for uc in presencas[al]:
-#             if uc not in r[al]:
-#                 r[al][uc] = {} 
-#             for turno in presencas[al][uc]:
-#                 #if turno == 1:
-#                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
-#     pprint.pprint(r)
-# else:
-#     print "failed to solve"
