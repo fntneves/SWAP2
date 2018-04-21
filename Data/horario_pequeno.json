@@ -1,0 +1,15 @@
+[
+    {
+        "Segunda": [
+            {"H502N1":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"TP1"}},
+            {"H502N2":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"PL2"}},
+            {"H502N3":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"TP2"}},
+            {"H502N4":{"HoraI":"09:00","HoraF":"11:00","Capacidade":6,"Turno":"TP1"}},
+            {"H502N2":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP1"}},
+            {"H502N1":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP2"}},
+            {"H502N4":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"TP2"}},
+            {"H502N3":{"HoraI":"11:00","HoraF":"13:00","Capacidade":6,"Turno":"PL6"}},
+            {"H502N3_t":{"HoraI":"14:00","HoraF":"16:00","Capacidade":10,"Turno":"T1"}}
+        ]
+    }
+]

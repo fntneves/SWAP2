@@ -12,17 +12,6 @@ slots = {}
 presencas = {}
 
 total_alocacoes = 0
-# Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
-for elem in alunos_json:
-    for al in elem:
-        if al in alunos:
-            print 'Aluno %s repetido' % al
-        for uc in elem[al]:
-            if al not in alunos:
-                alunos[al] = [uc]
-            else:
-                alunos[al] += [uc]
-
 
 n_dia = 0
 minimo_hora = 100
@@ -47,11 +36,24 @@ for elem in horario_json:
     n_dia += 1
 maximo_dia = n_dia
 
+# Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
+for elem in alunos_json:
+    for al in elem:
+        if al in alunos:
+            print 'Aluno %s repetido' % al
+        for uc in elem[al]:
+            if al not in alunos:
+                alunos[al] = [uc]
+            else:
+                alunos[al] += [uc]
+            teorica = uc + '_t'
+            if teorica in slots:
+                alunos[al] += [teorica]
+
 for al in alunos:
     for uc in alunos[al]:
         if uc in slots:
             total_alocacoes += 1
-#pprint.pprint(slots)
 
 n_al = 0
 n_uc = 0
@@ -125,21 +127,8 @@ s.add(values_c)
 x = time.clock()
 print 'Solving constraint 1'
 if s.check() != sat:
-    print 'Failed to solver constraint 1'
+    print 'Failed to solve constraint 1'
     sys.exit()
-else:
-    # Estado do solver
-    m = s.model()
-    r = {}
-    for al in presencas:
-        if al not in r:
-            r[al] = {}
-        for uc in presencas[al]:
-            if uc not in r[al]:
-                r[al][uc] = {} 
-            for turno in presencas[al][uc]:
-                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
-    pprint.pprint(r)
 
 x1 = time.clock()
 print x1 - x
@@ -149,21 +138,8 @@ s.add(um_turno_c)
 
 print 'Solving constraint 2'
 if s.check() != sat:
-    print 'Failed to solver constraint 2'
+    print 'Falhou a resolver restrição de que cada aluno tem no máximo um turno'
     sys.exit()
-else:
-    # Estado do solver
-    m = s.model()
-    r = {}
-    for al in presencas:
-        if al not in r:
-            r[al] = {}
-        for uc in presencas[al]:
-            if uc not in r[al]:
-                r[al][uc] = {} 
-            for turno in presencas[al][uc]:
-                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
-    pprint.pprint(r)
 
 x = time.clock()
 print x - x1
@@ -173,21 +149,8 @@ print x - x1
 s.add(sem_sobreposicoes_c)
 print 'Solving constraint 3'
 if s.check() != sat:
-    print 'Failed to solver constraint 3'
+    print 'Falhou a resolver a restrição das sobreposições'
     sys.exit()
-else:
-    # Estado do solver
-    m = s.model()
-    r = {}
-    for al in presencas:
-        if al not in r:
-            r[al] = {}
-        for uc in presencas[al]:
-            if uc not in r[al]:
-                r[al][uc] = {} 
-            for turno in presencas[al][uc]:
-                r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])          
-    pprint.pprint(r)
 
 
 x1 = time.clock()
@@ -240,24 +203,6 @@ if s.check() == sat:
     print 'Alunos alocados a todas as ucs: %s' % al_aloc
     print 'Numero de alocacoes efetuadas %s' % total_alocados
     print 'Numero de alocacoes possiveis %s' % total_alocacoes
-    print s.statistics()
     #print s.sexpr()
 else:
-    print "failed to solve"
-
-# s.add(capacidade_maxima_c)
-# if s.check() == sat:
-#     m = s.model()
-#     r = {}
-#     for al in presencas:
-#         if al not in r:
-#             r[al] = {}
-#         for uc in presencas[al]:
-#             if uc not in r[al]:
-#                 r[al][uc] = {} 
-#             for turno in presencas[al][uc]:
-#                 #if turno == 1:
-#                 r[al][uc][turno] = m.evaluate(presencas[al][uc][turno])
-#     pprint.pprint(r)
-# else:
-#     print "failed to solve"
+    print 'Falhou a resolver a restrição das capacidades'
