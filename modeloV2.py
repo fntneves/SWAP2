@@ -4,6 +4,7 @@ from z3 import *
 
 alunos_json  = json.load(open(sys.argv[1]))
 horario_json = json.load(open(sys.argv[2]))
+grupos_json = json.load(open('grupos.json'))
 
 #A[0-9][0-9][0-9][0-9][0-9]
 
@@ -73,7 +74,7 @@ for al in alunos:
 
 ##################### OBJECTIVOS ######################################
 
-max_all = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] ])
+max_Teoricas = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if len(uc) > 6 ])
 
 ##################### RESTRICOES ######################################
 
@@ -103,7 +104,10 @@ for al in presencas:
                 lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
-capacidade_maxima_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno]))]
+
+capacidade_maxima_TP_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if len(uc) == 6 ]
+
+capacidade_maxima_T_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if len(uc) > 6 ]
 
 # Aulas sem sobreposicoes
 # Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
@@ -128,11 +132,21 @@ for al in presencas:
 
 sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d] if len(turnos[al][d][h]) > 0 ]
 
+######### grupos #######
+#Carrega os grupos e cria a restrição dos grupos 
+grupos_c = []
+sum_grupos = []
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        al1 = grupos_json[uc][grupo][0]
+        grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo] if al != al1 ]) for t in presencas[al1][uc] ]
+        sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo] if al != al1 ]),1,0) for t in presencas[al1][uc] ]
+
+max_grupos = Sum( sum_grupos )
 ########################### SOLVER ############################
 print 'Numero de alunos: %s' % len(alunos)
 
 s = Optimize()
-s.maximize(max_all)
 
 x = time.clock()
 s.add(values_c)
@@ -140,40 +154,70 @@ print 'Solving constraint 0 or 1'
 if s.check() != sat:
     print 'Failed to solver constraint 0 or 1'
     sys.exit()
-x1 = time.clock()
-print x1 - x
-
-s.add(um_turnoT_c)
-print 'Solving constraint tentar um turno T'
-if s.check() != sat:
-    print 'Failed to solver constraint tentar um turno t'
-    sys.exit()
+x1 = x
 x = time.clock()
 print x - x1
 
-s.add(um_turnoTP_c)
-print 'Solving constraint obrigatório um turno TP'
-if s.check() != sat:
-    print 'Failed to solver constraint obrigatório um turno TP'
-    sys.exit()
-x1 = time.clock()
-print x1 - x
+# s.add(um_turnoTP_c)
+# print 'Solving constraint obrigatório um turno TP'
+# if s.check() != sat:
+#     print 'Failed to solver constraint obrigatório um turno TP'
+#     sys.exit()
+# x1 = x
+# x = time.clock()
+# print x - x1
 
 s.add(sem_sobreposicoes_c)
 print 'Solving constraint sem sobreposicções'
 if s.check() != sat:
     print 'Failed to solver constraint sem sobreposicções'
     sys.exit()
+x1 = x
+x = time.clock()
+print x-x1
+
+# s.add(um_turnoT_c)
+# print 'Solving constraint tentar um turno T'
+# if s.check() != sat:
+#     print 'Failed to solver constraint tentar um turno t'
+#     sys.exit()
+# x1 = x
+# x = time.clock()
+# print x - x1
+
+s.set('timeout', 900000)
+s.add(um_turnoT_c)
+s.add(capacidade_maxima_T_c)
+s.maximize(max_Teoricas)
+print 'A Maximizar os turnos teoricos dentro das capacidades maximas'
+if s.check() != sat:
+    print 'Failed to maximize turnos teoricos'
+    # sys.exit()
+x1 = x
+x = time.clock()
+print x-x1
+
+s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
+s.add(um_turnoTP_c)
+s.add(capacidade_maxima_TP_c)
+print 'Solving constraint capacidade maxima dos TPs'
+if s.check() != sat:
+    print 'Failed to solver constraint alocações nos TPs'
+    # sys.exit()
+x1 = x
 x = time.clock()
 print x - x1
 
-s.add(capacidade_maxima_c)
-print 'Solving constraint capacidade maxima'
+for c in grupos_c:
+    s.add_soft(c)
+s.maximize(max_grupos)
+print 'Solving constraint dos grupos'
 if s.check() != sat:
-    print 'Failed to solver constraint capacidade maxima'
-    sys.exit()
-x1 = time.clock()
-print x1-x
+    print 'Failed to solver constraint dos grupos'
+    # sys.exit()
+x1 = x
+x = time.clock()
+print x - x1
 
 m = s.model()
 r = {}
@@ -182,11 +226,11 @@ for al in presencas:
         r[al] = {}
     for uc in presencas[al]:
         if uc not in r[al]:
-            r[al][uc] = {} 
+            r[al][uc] = [] 
         for turno in presencas[al][uc]:
             aloc = m.evaluate(presencas[al][uc][turno])
             if aloc == 1:
-                r[al][uc][turno] = aloc
+                r[al][uc] += [turno]
 
 #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
@@ -200,12 +244,11 @@ for al in r:
         if u not in alocacoes_finais:
             alocacoes_finais[u] = {}
         for t in r[al][u]:
-            if r[al][u][t] == 1:
-                n_tur += 1
-                if t not in alocacoes_finais[u]:
-                    alocacoes_finais[u][t] = 1
-                else:
-                    alocacoes_finais[u][t] += 1
+            n_tur += 1
+            if t not in alocacoes_finais[u]:
+                alocacoes_finais[u][t] = 1
+            else:
+                alocacoes_finais[u][t] += 1
     if n_tur >= len(r[al]) :
         total_aloc += 1
         n_tur = 0
@@ -218,6 +261,15 @@ for al in alunos:
         if len(uc) > 6 and len(r[al][uc]) == 0 and al not in nao_alocados_t:
             nao_alocados_t.append(al)
 
+#calcular os grupos que ficaram juntos ou não
+grupos_nao_juntos = []
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        al1 = grupos_json[uc][grupo][0]
+        turno = r[al1][uc][0]
+        for al in grupos_json[uc][grupo]:
+            if turno not in r[al][uc]:
+                grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
 
 pprint.pprint(alocacoes_finais)
 # pprint.pprint(r)
@@ -226,5 +278,7 @@ print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
 print 'Alunos não alocados a teoricas: '
 pprint.pprint(nao_alocados_t)
+print 'grupos nao juntos: '
+pprint.pprint(grupos_nao_juntos)
 #print s.statistics()
 # print s.sexpr()
