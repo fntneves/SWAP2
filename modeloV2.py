@@ -1,11 +1,12 @@
 # coding=utf-8
 import sys, json, pprint, time
 from z3 import *
+z3.set_param("auto-config", "false")
 
 alunos_json  = json.load(open(sys.argv[1]))
 horario_json = json.load(open(sys.argv[2]))
 
-#A[0-9][0-9][0-9][0-9][0-9]
+suf_teoria = '-T'
 
 alunos = {}
 slots = {}
@@ -38,7 +39,7 @@ for elem in horario_json:
                 minimo_hora = min(horaI,minimo_hora)
                 maximo_hora = max(horaF,maximo_hora)
                 # parte do codigo que adiciona o codigo-T para cadeiras com teoricas do aluno
-                if codigo[-2:] == '-T':
+                if codigo[-2:] == suf_teoria:
                     codigoAux = codigo[:6]
                     for al in alunos:
                         if codigoAux in alunos[al] and codigo not in alunos[al]:
@@ -84,11 +85,11 @@ values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) fo
 
 #- Um aluno so pode ser atribuido a um e um so turno se for TP
 
-um_turnoTP_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al] if not (codigo[-2:] == '-T') ]
+um_turnoTP_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al] if not (uc[-2:] == suf_teoria) ]
 
 #- Um aluno so pode ser atribuido a so turno se for T, nao sendo obrigatório
 
-um_turnoT_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1 for al in presencas for uc in presencas[al] if codigo[-2:] == '-T']
+um_turnoT_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1 for al in presencas for uc in presencas[al] if uc[-2:] == suf_teoria]
 
 #- O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
@@ -213,14 +214,14 @@ for al in r:
 #calcular alunos alocados a todas as cadeiras que estao inscritos  
 for al in alunos:
     for uc in alunos[al]:
-        if not uc[-2:] == '-T' and len(r[al][uc]) == 0 and al not in nao_alocados:
+        if not uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados:
             nao_alocados.append(al)
-        if uc[-2:] == '-T' and len(r[al][uc]) == 0 and al not in nao_alocados_t:
+        if uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados_t:
             nao_alocados_t.append(al)
 
 
 pprint.pprint(alocacoes_finais)
-pprint.pprint(r)
+#pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
