@@ -152,9 +152,9 @@ s = Optimize()
 x = time.clock()
 s.add(values_c)
 print 'Solving constraint 0 or 1'
-# if s.check() != sat:
-#     print 'Failed to solver constraint 0 or 1'
-#     sys.exit()
+if s.check() != sat:
+    print 'Failed to solver constraint 0 or 1'
+    sys.exit()
 x1 = x
 x = time.clock()
 print x - x1
@@ -170,9 +170,9 @@ print x - x1
 
 s.add(sem_sobreposicoes_c)
 print 'Solving constraint sem sobreposicções'
-# if s.check() != sat:
-#     print 'Failed to solver constraint sem sobreposicções'
-#     sys.exit()
+if s.check() != sat:
+    print 'Failed to solver constraint sem sobreposicções'
+    sys.exit()
 x1 = x
 x = time.clock()
 print x-x1
@@ -191,9 +191,9 @@ s.add(um_turnoT_c)
 s.add(capacidade_maxima_T_c)
 s.maximize(max_Teoricas)
 print 'A Maximizar os turnos teoricos dentro das capacidades maximas'
-# if s.check() != sat:
-#     print 'Failed to maximize turnos teoricos'
-#     # sys.exit()
+if s.check() != sat:
+    print 'Failed to maximize turnos teoricos'
+    # sys.exit()
 x1 = x
 x = time.clock()
 print x-x1
@@ -202,9 +202,9 @@ for c in grupos_c:
     s.add_soft(c)
 s.maximize(max_grupos)
 print 'Solving constraint dos grupos'
-# if s.check() != sat:
-#     print 'Failed to solver constraint dos grupos'
-#     # sys.exit()
+if s.check() != sat:
+    print 'Failed to solver constraint dos grupos'
+    # sys.exit()
 x1 = x
 x = time.clock()
 print x - x1
@@ -213,74 +213,74 @@ s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
 s.add(um_turnoTP_c)
 s.add(capacidade_maxima_TP_c)
 print 'Solving constraint capacidade maxima dos TPs'
-# if s.check() != sat:
-#     print 'Failed to solver constraint alocações nos TPs'
-#     # sys.exit()
+if s.check() != sat:
+    print 'Failed to solver constraint alocações nos TPs'
+    # sys.exit()
 x1 = x
 x = time.clock()
 print x - x1
 
-# m = s.model()
-# r = {}
-# for al in presencas:
-#     if al not in r:
-#         r[al] = {}
-#     for uc in presencas[al]:
-#         if uc not in r[al]:
-#             r[al][uc] = [] 
-#         for turno in presencas[al][uc]:
-#             aloc = m.evaluate(presencas[al][uc][turno])
-#             if aloc == 1:
-#                 r[al][uc] += [turno]
+m = s.model()
+r = {}
+for al in presencas:
+    if al not in r:
+        r[al] = {}
+    for uc in presencas[al]:
+        if uc not in r[al]:
+            r[al][uc] = [] 
+        for turno in presencas[al][uc]:
+            aloc = m.evaluate(presencas[al][uc][turno])
+            if aloc == 1:
+                r[al][uc] += [turno]
 
-# #alunos alocados a todas as cadeiras que estao inscritos
-# total_aloc = 0
-# n_tur = 0
-# nao_alocados = []
-# nao_alocados_t = []
-# alocacoes_finais = {}
+#alunos alocados a todas as cadeiras que estao inscritos
+total_aloc = 0
+n_tur = 0
+nao_alocados = []
+nao_alocados_t = []
+alocacoes_finais = {}
 
-# for al in r:  
-#     for u in r[al]:
-#         if u not in alocacoes_finais:
-#             alocacoes_finais[u] = {}
-#         for t in r[al][u]:
-#             n_tur += 1
-#             if t not in alocacoes_finais[u]:
-#                 alocacoes_finais[u][t] = 1
-#             else:
-#                 alocacoes_finais[u][t] += 1
-#     if n_tur >= len(r[al]) :
-#         total_aloc += 1
-#         n_tur = 0
+for al in r:  
+    for u in r[al]:
+        if u not in alocacoes_finais:
+            alocacoes_finais[u] = {}
+        for t in r[al][u]:
+            n_tur += 1
+            if t not in alocacoes_finais[u]:
+                alocacoes_finais[u][t] = 1
+            else:
+                alocacoes_finais[u][t] += 1
+    if n_tur >= len(r[al]) :
+        total_aloc += 1
+        n_tur = 0
 
-# #calcular alunos alocados a todas as cadeiras que estao inscritos  
-# for al in alunos:
-#     for uc in alunos[al]:
-#         if not uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados:
-#             nao_alocados.append(al)
-#         if uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados_t:
-#             nao_alocados_t.append(al)
+#calcular alunos alocados a todas as cadeiras que estao inscritos  
+for al in alunos:
+    for uc in alunos[al]:
+        if not uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados:
+            nao_alocados.append(al)
+        if uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados_t:
+            nao_alocados_t.append(al)
 
-# #calcular os grupos que ficaram juntos ou não
-# grupos_nao_juntos = []
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         turno = r[al1][uc][0]
-#         for al in grupos_json[uc][grupo]:
-#             if turno not in r[al][uc]:
-#                 grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
+#calcular os grupos que ficaram juntos ou não
+grupos_nao_juntos = []
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        al1 = grupos_json[uc][grupo][0]
+        turno = r[al1][uc][0]
+        for al in grupos_json[uc][grupo]:
+            if turno not in r[al][uc]:
+                grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
 
-# pprint.pprint(alocacoes_finais)
+pprint.pprint(alocacoes_finais)
 # pprint.pprint(r)
-# print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
-# print 'Alunos não alocados a praticas: '
-# pprint.pprint(nao_alocados)
-# print 'Alunos não alocados a teoricas: '
-# pprint.pprint(nao_alocados_t)
-# print 'grupos nao juntos: '
-# pprint.pprint(grupos_nao_juntos)
+print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
+print 'Alunos não alocados a praticas: '
+pprint.pprint(nao_alocados)
+print 'Alunos não alocados a teoricas: '
+pprint.pprint(nao_alocados_t)
+print 'grupos nao juntos: '
+pprint.pprint(grupos_nao_juntos)
 #print s.statistics()
 
 zmtfile = open('z3code.smt', 'w')
