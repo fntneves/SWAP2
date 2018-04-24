@@ -273,7 +273,7 @@ for uc in grupos_json:
                 grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
 
 pprint.pprint(alocacoes_finais)
-#pprint.pprint(r)
+pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
