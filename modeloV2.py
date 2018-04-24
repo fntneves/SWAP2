@@ -1,7 +1,6 @@
 # coding=utf-8
 import sys, json, pprint, time
 from z3 import *
-z3.set_param("auto-config", "false")
 
 alunos_json  = json.load(open(sys.argv[1]))
 horario_json = json.load(open(sys.argv[2]))
