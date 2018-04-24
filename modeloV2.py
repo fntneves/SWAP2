@@ -197,23 +197,23 @@ x1 = x
 x = time.clock()
 print x-x1
 
-s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
-s.add(um_turnoTP_c)
-s.add(capacidade_maxima_TP_c)
-print 'Solving constraint capacidade maxima dos TPs'
-if s.check() != sat:
-    print 'Failed to solver constraint alocações nos TPs'
-    # sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
 for c in grupos_c:
     s.add_soft(c)
 s.maximize(max_grupos)
 print 'Solving constraint dos grupos'
 if s.check() != sat:
     print 'Failed to solver constraint dos grupos'
+    # sys.exit()
+x1 = x
+x = time.clock()
+print x - x1
+
+s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
+s.add(um_turnoTP_c)
+s.add(capacidade_maxima_TP_c)
+print 'Solving constraint capacidade maxima dos TPs'
+if s.check() != sat:
+    print 'Failed to solver constraint alocações nos TPs'
     # sys.exit()
 x1 = x
 x = time.clock()
