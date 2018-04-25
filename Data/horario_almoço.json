@@ -1,0 +1,48 @@
+
+{"ALMOÇO1":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+{"ALMOÇO1":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+
+[
+    {
+        "Segunda": [
+
+            {"ALMOÇO2":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOÇO2":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}}
+
+        ]
+    },
+    {
+        "Terca": [
+
+            {"ALMOÇO3":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOÇO3":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}}
+
+
+        ]
+    },
+    {
+        "Quarta": [
+
+            {"ALMOÇO4":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOÇO4":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}}
+
+
+        ]
+    },
+    {
+        "Quinta":[
+
+            {"ALMOÇO5":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOÇO5":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}}
+
+        ]
+    },
+    {
+        "Sexta":[
+
+            {"ALMOÇO6":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOÇO6":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}}
+
+        ]
+    }
+]
