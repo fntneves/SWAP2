@@ -44,6 +44,10 @@ for elem in horario_json:
                     for al in alunos:
                         if codigoAux in alunos[al] and codigo not in alunos[al]:
                             alunos[al] += [codigo]
+                if codigo[:6] == 'ALMOCO':
+                    for al in alunos:
+                        if codigo not in alunos[al]:
+                            alunos[al] += [codigo]                        
                 if codigo not in slots:
                     slots[codigo] = {}
                 turno = uc[codigo]['Turno']
@@ -74,7 +78,7 @@ for al in alunos:
 
 ##################### OBJECTIVOS ######################################
 
-#max_Teoricas = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if uc[-2:] == suf_teoria ])
+max_Teoricas = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if uc[-2:] == suf_teoria ])
 
 ##################### RESTRICOES ######################################
 
@@ -188,7 +192,7 @@ print x - x1
 s.set('timeout', 900000)
 s.add(um_turnoT_c)
 s.add(capacidade_maxima_T_c)
-#s.maximize(max_Teoricas)
+s.maximize(max_Teoricas)
 print 'A Maximizar os turnos teoricos dentro das capacidades maximas'
 if s.check() != sat:
     print 'Failed to maximize turnos teoricos'

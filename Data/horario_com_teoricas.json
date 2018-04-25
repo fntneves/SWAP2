@@ -1,8 +1,8 @@
 [
     {
         "Segunda": [
-          {"ALMOÇO2":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
-          {"ALMOÇO2":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+          {"ALMOCO2":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+          {"ALMOCO2":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
             {"H502N1":{"HoraI":"09:00","HoraF":"11:00","Capacidade":94,"Turno":"PL1"}},
             {"H502N1":{"HoraI":"09:00","HoraF":"11:00","Capacidade":30,"Turno":"PL3"}},
             {"H502N3":{"HoraI":"09:00","HoraF":"11:00","Capacidade":49,"Turno":"TP5"}},
@@ -56,8 +56,8 @@
     },
     {
         "Terca": [
-            {"ALMOÇO3":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
-            {"ALMOÇO3":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+            {"ALMOCO3":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO3":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N3-T":{"HoraI":"09:00","HoraF":"11:00","Capacidade":150,"Turno":"T1"}},
 
@@ -91,8 +91,8 @@
     },
     {
         "Quarta": [
-            {"ALMOÇO4":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
-            {"ALMOÇO4":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+            {"ALMOCO4":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO4":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N5":{"HoraI":"09:00","HoraF":"10:00","Capacidade":100,"Turno":"TP1"}},
 
@@ -149,8 +149,8 @@
     },
     {
         "Quinta":[
-            {"ALMOÇO5":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
-            {"ALMOÇO5":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+            {"ALMOCO5":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO5":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N1-T":{"HoraI":"09:00","HoraF":"10:00","Capacidade":150,"Turno":"T1"}},
 
@@ -192,8 +192,8 @@
     },
     {
         "Sexta":[
-            {"ALMOÇO6":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
-            {"ALMOÇO6":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
+            {"ALMOCO6":{"HoraI":"12:00","HoraF":"13:00","Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO6":{"HoraI":"13:00","HoraF":"14:00","Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N1":{"HoraI":"09:00","HoraF":"11:00","Capacidade":45,"Turno":"PL8"}},
             {"H502N3":{"HoraI":"09:00","HoraF":"11:00","Capacidade":49,"Turno":"TP2"}},
