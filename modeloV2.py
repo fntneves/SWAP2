@@ -26,11 +26,13 @@ for al in alunos_json:
 
 
 n_dia = 0
-minimo_hora = 100
-maximo_hora = 0
+
+dias_horas = {}
 
 #Carrega o horario e preenche os dicionarios slots, slots --> {Hxxxx:{TPX:[(Dia,Hora,Slots_1h,Capacidade)]}}}
-for elem in horario_json: 
+for elem in horario_json:
+    minimo_hora = 100
+    maximo_hora = 0
     for dia in elem:
         for uc in elem[dia]:
             for codigo in uc:
@@ -55,6 +57,8 @@ for elem in horario_json:
                     slots[codigo][turno] = [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
                 else:
                     slots[codigo][turno] += [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
+        if n_dia not in dias_horas:
+            dias_horas[n_dia] = (minimo_hora,maximo_hora)
     n_dia += 1
 maximo_dia = n_dia
 # print('alunos:')
@@ -123,16 +127,17 @@ for al in presencas:
         turnos[al] = {}
     for uc in presencas[al]:
         for t in presencas[al][uc]:
-            for d in range(maximo_dia):
+            for d in dias_horas:
                 if d not in turnos[al]:
                     turnos[al][d] = {}
-                for h in range(minimo_hora,maximo_hora):
+                for h in range(dias_horas[d][0],dias_horas[d][1]):
                     if h not in turnos[al][d]:
                         turnos[al][d][h] = []
                     tuplo = slots[uc][t]
                     for i in range(len(tuplo)):
                         if tuplo[i][0] == d and (tuplo[i][1] <= h < (tuplo[i][1] + tuplo[i][2])):
                             turnos[al][d][h] += [ presencas[al][uc][t] ]
+#pprint.pprint(turnos)
 
 sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d] if len(turnos[al][d][h]) > 0 ]
 
@@ -189,7 +194,7 @@ x1 = x
 x = time.clock()
 print x - x1
 
-s.set('timeout', 900000)
+#s.set('timeout', 900000)
 s.add(um_turnoT_c)
 s.add(capacidade_maxima_T_c)
 s.maximize(max_Teoricas)
