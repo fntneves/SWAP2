@@ -101,7 +101,6 @@ um_turnoT_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]])
 
 #- O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
-# ZE
 lista_capacidades = {}
 for al in presencas:
     for uc in presencas[al]:
@@ -130,7 +129,9 @@ for al in presencas:
             for d in dias_horas:
                 if d not in turnos[al]:
                     turnos[al][d] = {}
-                for h in range(dias_horas[d][0],dias_horas[d][1]):
+                hora_min = dias_horas[d][0]
+                hora_max = dias_horas[d][1]
+                for h in range(hora_min,hora_max):
                     if h not in turnos[al][d]:
                         turnos[al][d][h] = []
                     tuplo = slots[uc][t]
