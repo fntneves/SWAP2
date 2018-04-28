@@ -78,7 +78,7 @@ values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) fo
 
 #2 - Um aluno so pode ser atribuido a um e um so turno
 
-um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1 for al in presencas for uc in presencas[al]]
+um_turno_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al]]
 
 #3 - O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
