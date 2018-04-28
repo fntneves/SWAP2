@@ -1,12 +1,12 @@
 [
     {
         "Segunda": [
-            {"C1":{"HoraI":"09:00","HoraF":"11:00","Capacidade":2,"Turno":"TP1"}},
-            {"C2":{"HoraI":"09:00","HoraF":"11:00","Capacidade":2,"Turno":"TP1"}},
-            {"C3":{"HoraI":"09:00","HoraF":"11:00","Capacidade":2,"Turno":"TP1"}},
-            {"C1":{"HoraI":"11:00","HoraF":"13:00","Capacidade":2,"Turno":"TP2"}},
-            {"C2":{"HoraI":"11:00","HoraF":"13:00","Capacidade":2,"Turno":"TP2"}},
-            {"C3":{"HoraI":"11:00","HoraF":"13:00","Capacidade":2,"Turno":"TP2"}}
+            {"C1":{"HoraI":0,"HoraF":3,"Capacidade":2,"Turno":"TP1"}},
+            {"C2":{"HoraI":0,"HoraF":3,"Capacidade":2,"Turno":"TP1"}},
+            {"C3":{"HoraI":0,"HoraF":3,"Capacidade":2,"Turno":"TP1"}},
+            {"C1":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP2"}},
+            {"C2":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP2"}},
+            {"C3":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP2"}}
             
         ]
     }

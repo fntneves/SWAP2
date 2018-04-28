@@ -27,19 +27,17 @@ for al in alunos_json:
 
 n_dia = 0
 
-dias_horas = {}
+dias_slots = {}
 
 #Carrega o horario e preenche os dicionarios slots, slots --> {Hxxxx:{TPX:[(Dia,Hora,Slots_1h,Capacidade)]}}}
 for elem in horario_json:
-    minimo_hora = 100
-    maximo_hora = 0
+    maximo_slot = 0
     for dia in elem:
         for uc in elem[dia]:
             for codigo in uc:
-                horaI = int(uc[codigo]['HoraI'][:2])
-                horaF = int(uc[codigo]['HoraF'][:2])
-                minimo_hora = min(horaI,minimo_hora)
-                maximo_hora = max(horaF,maximo_hora)
+                horaI = int(uc[codigo]['HoraI'])
+                horaF = int(uc[codigo]['HoraF'])
+                maximo_slot = max(horaF,maximo_slot)
                 # parte do codigo que adiciona o codigo-T para cadeiras com teoricas do aluno
                 if codigo[-2:] == suf_teoria:
                     codigoAux = codigo[:6]
@@ -54,11 +52,11 @@ for elem in horario_json:
                     slots[codigo] = {}
                 turno = uc[codigo]['Turno']
                 if turno not in slots[codigo]:
-                    slots[codigo][turno] = [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
+                    slots[codigo][turno] = [(n_dia,horaI,horaF,uc[codigo]['Capacidade'])]
                 else:
-                    slots[codigo][turno] += [(n_dia,horaI,horaF-horaI,uc[codigo]['Capacidade'])]
-        if n_dia not in dias_horas:
-            dias_horas[n_dia] = (minimo_hora,maximo_hora)
+                    slots[codigo][turno] += [(n_dia,horaI,horaF,uc[codigo]['Capacidade'])]
+        if n_dia not in dias_slots:
+            dias_slots[n_dia] = maximo_slot
     n_dia += 1
 maximo_dia = n_dia
 # print('alunos:')
@@ -126,21 +124,20 @@ for al in presencas:
         turnos[al] = {}
     for uc in presencas[al]:
         for t in presencas[al][uc]:
-            for d in dias_horas:
+            for d in dias_slots:
                 if d not in turnos[al]:
                     turnos[al][d] = {}
-                hora_min = dias_horas[d][0]
-                hora_max = dias_horas[d][1]
-                for h in range(hora_min,hora_max):
-                    if h not in turnos[al][d]:
-                        turnos[al][d][h] = []
+                slot_max = dias_slots[d]
+                for s in range(slot_max):
+                    if s not in turnos[al][d]:
+                        turnos[al][d][s] = []
                     tuplo = slots[uc][t]
                     for i in range(len(tuplo)):
-                        if tuplo[i][0] == d and (tuplo[i][1] <= h < (tuplo[i][1] + tuplo[i][2])):
-                            turnos[al][d][h] += [ presencas[al][uc][t] ]
+                        if tuplo[i][0] == d and (tuplo[i][1] <= s <= tuplo[i][2]):
+                            turnos[al][d][s] += [ presencas[al][uc][t] ]
 #pprint.pprint(turnos)
 
-sem_sobreposicoes_c = [ Sum(turnos[al][d][h]) <= 1 for al in turnos for d in turnos[al] for h in turnos[al][d] if len(turnos[al][d][h]) > 0 ]
+sem_sobreposicoes_c = [ Sum(turnos[al][d][s]) <= 1 for al in turnos for d in turnos[al] for s in turnos[al][d] if len(turnos[al][d][s]) > 0 ]
 
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
@@ -209,7 +206,7 @@ print x-x1
 
 for c in grupos_c:
     s.add_soft(c)
-s.maximize(max_grupos)
+#s.maximize(max_grupos)
 print 'Solving constraint dos grupos'
 if s.check() != sat:
     print 'Failed to solver constraint dos grupos'
@@ -218,7 +215,7 @@ x1 = x
 x = time.clock()
 print x - x1
 
-s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
+s.set('timeout', 900000 * 8) # 2 slots, 900000 sao 15 min
 s.add(um_turnoTP_c)
 s.add(capacidade_maxima_TP_c)
 print 'Solving constraint capacidade maxima dos TPs'
@@ -282,7 +279,7 @@ for uc in grupos_json:
                 grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
 
 pprint.pprint(alocacoes_finais)
-# pprint.pprint(r)
+pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
