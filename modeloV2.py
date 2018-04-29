@@ -35,8 +35,8 @@ for elem in horario_json:
     for dia in elem:
         for uc in elem[dia]:
             for codigo in uc:
-                horaI = int(uc[codigo]['HoraI'])
-                horaF = int(uc[codigo]['HoraF'])
+                horaI = uc[codigo]['HoraI']
+                horaF = uc[codigo]['HoraF']
                 maximo_slot = max(horaF,maximo_slot)
                 # parte do codigo que adiciona o codigo-T para cadeiras com teoricas do aluno
                 if codigo[-2:] == suf_teoria:
@@ -129,11 +129,11 @@ for al in presencas:
                     turnos[al][d] = {}
                 slot_max = dias_slots[d]
                 for s in range(slot_max):
-                    if s not in turnos[al][d]:
-                        turnos[al][d][s] = []
                     tuplo = slots[uc][t]
                     for i in range(len(tuplo)):
                         if tuplo[i][0] == d and (tuplo[i][1] <= s <= tuplo[i][2]):
+                            if s not in turnos[al][d]:
+                                turnos[al][d][s] = []
                             turnos[al][d][s] += [ presencas[al][uc][t] ]
 #pprint.pprint(turnos)
 
