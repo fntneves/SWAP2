@@ -155,6 +155,7 @@ print 'Numero de alunos: %s' % len(alunos)
 
 s = Optimize()
 
+#s.set('timeout', 300000)
 x = time.clock()
 s.add(values_c)
 print 'Solving constraint 0 or 1'
@@ -193,6 +194,7 @@ x = time.clock()
 print x - x1
 
 #s.set('timeout', 900000)
+ # 2 slots, 900000 sao 15 min
 s.add(um_turnoT_c)
 s.add(capacidade_maxima_T_c)
 s.maximize(max_Teoricas)
@@ -215,7 +217,6 @@ x1 = x
 x = time.clock()
 print x - x1
 
-s.set('timeout', 900000 * 8) # 2 slots, 900000 sao 15 min
 s.add(um_turnoTP_c)
 s.add(capacidade_maxima_TP_c)
 print 'Solving constraint capacidade maxima dos TPs'
