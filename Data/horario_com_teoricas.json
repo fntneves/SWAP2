@@ -1,8 +1,8 @@
 [
     {
         "Segunda": [
-            {"ALMOCO2":{"HoraI":8,"HoraF":9,"Capacidade":400,"Turno":"TP1"}},
-            {"ALMOCO2":{"HoraI":10,"HoraF":11,"Capacidade":400,"Turno":"TP2"}},
+            {"ALMOCO2":{"HoraI":8,"HoraF":9,"Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO2":{"HoraI":10,"HoraF":11,"Capacidade":1000,"Turno":"TP2"}},
             {"H502N1":{"HoraI":2,"HoraF":5,"Capacidade":94,"Turno":"PL1"}},
             {"H502N1":{"HoraI":2,"HoraF":5,"Capacidade":30,"Turno":"PL3"}},
             {"H502N3":{"HoraI":2,"HoraF":5,"Capacidade":49,"Turno":"TP5"}},
@@ -56,8 +56,8 @@
     },
     {
         "Terca": [
-            {"ALMOCO3":{"HoraI":8,"HoraF":9,"Capacidade":400,"Turno":"TP1"}},
-            {"ALMOCO3":{"HoraI":10,"HoraF":11,"Capacidade":400,"Turno":"TP2"}},
+            {"ALMOCO3":{"HoraI":8,"HoraF":9,"Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO3":{"HoraI":10,"HoraF":11,"Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N3-T":{"HoraI":2,"HoraF":5,"Capacidade":140,"Turno":"T1"}},
 
@@ -91,8 +91,8 @@
     },
     {
         "Quarta": [
-            {"ALMOCO4":{"HoraI":8,"HoraF":9,"Capacidade":400,"Turno":"TP1"}},
-            {"ALMOCO4":{"HoraI":10,"HoraF":11,"Capacidade":400,"Turno":"TP2"}},
+            {"ALMOCO4":{"HoraI":8,"HoraF":9,"Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO4":{"HoraI":10,"HoraF":11,"Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N5":{"HoraI":2,"HoraF":3,"Capacidade":40,"Turno":"TP1"}},
 
@@ -149,8 +149,8 @@
     },
     {
         "Quinta":[
-            {"ALMOCO5":{"HoraI":8,"HoraF":9,"Capacidade":400,"Turno":"TP1"}},
-            {"ALMOCO5":{"HoraI":10,"HoraF":11,"Capacidade":400,"Turno":"TP2"}},
+            {"ALMOCO5":{"HoraI":8,"HoraF":9,"Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO5":{"HoraI":10,"HoraF":11,"Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N1-T":{"HoraI":2,"HoraF":3,"Capacidade":140,"Turno":"T1"}},
 
@@ -192,8 +192,8 @@
     },
     {
         "Sexta":[
-            {"ALMOCO6":{"HoraI":8,"HoraF":9,"Capacidade":400,"Turno":"TP1"}},
-            {"ALMOCO6":{"HoraI":10,"HoraF":11,"Capacidade":400,"Turno":"TP2"}},
+            {"ALMOCO6":{"HoraI":8,"HoraF":9,"Capacidade":1000,"Turno":"TP1"}},
+            {"ALMOCO6":{"HoraI":10,"HoraF":11,"Capacidade":1000,"Turno":"TP2"}},
 
             {"H502N1":{"HoraI":2,"HoraF":5,"Capacidade":45,"Turno":"PL8"}},
             {"H502N3":{"HoraI":2,"HoraF":5,"Capacidade":49,"Turno":"TP2"}},
