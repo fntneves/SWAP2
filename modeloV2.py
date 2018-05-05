@@ -141,17 +141,7 @@ sem_sobreposicoes_c = [ Sum(turnos[al][d][s]) <= 1 for al in turnos for d in tur
 
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
-<<<<<<< HEAD
-grupos_c = []
-sum_grupos = []
-for uc in grupos_json:
-    for grupo in grupos_json[uc]:
-        al1 = grupos_json[uc][grupo][0]
-        grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
-        sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
 
-max_grupos = Sum( sum_grupos )
-=======
 # grupos_c = []
 # sum_grupos = []
 # for uc in grupos_json:
@@ -161,7 +151,7 @@ max_grupos = Sum( sum_grupos )
 #         sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
 
 # max_grupos = Sum( sum_grupos )
->>>>>>> paulo
+
 ########################### SOLVER ############################
 print 'Numero de alunos: %s' % len(alunos)
 
