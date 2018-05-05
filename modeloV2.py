@@ -209,6 +209,10 @@ s.add(um_turnoTP_c)
 # s.add(capacidade_maxima_TP_c)
 for c in capacidade_maxima_TP_c:
     s.add_soft(c)
+for uc in lista_capacidades:
+    for turno in lista_capacidades[uc]:
+        for i in range(len(slots[uc][turno])):
+            s.minimize(Sum(lista_capacidades[uc][turno]))
 # s.minimize(min_excessos)
 print 'A alocar os alunos dentro da capacidade maxima dos TPs sempre que possivel'
 try:
