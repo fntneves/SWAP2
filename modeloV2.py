@@ -140,17 +140,17 @@ for al in presencas:
 sem_sobreposicoes_c = [ Sum(turnos[al][d][s]) <= 1 for al in turnos for d in turnos[al] for s in turnos[al][d] if len(turnos[al][d][s]) > 0 ]
 
 ######### grupos #######
-#Carrega os grupos e cria a restrição dos grupos 
+Carrega os grupos e cria a restrição dos grupos 
 
-# grupos_c = []
-# sum_grupos = []
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
-#         sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
+grupos_c = []
+sum_grupos = []
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        al1 = grupos_json[uc][grupo][0]
+        grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
+        sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
 
-# max_grupos = Sum( sum_grupos )
+max_grupos = Sum( sum_grupos )
 
 ########################### SOLVER ############################
 print 'Numero de alunos: %s' % len(alunos)
@@ -163,15 +163,6 @@ s.add(values_c)
 print 'Solving constraint 0 or 1'
 if s.check() != sat:
     print 'Failed to solver constraint 0 or 1'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
-s.add(um_turnoTP_c)
-print 'Solving constraint obrigatório um turno TP'
-if s.check() != sat:
-    print 'Failed to solver constraint obrigatório um turno TP'
     sys.exit()
 x1 = x
 x = time.clock()
@@ -201,40 +192,46 @@ print x-x1
 
 
 # for c in grupos_c:
-#     s.add_soft(c)
-# s.maximize(max_grupos)
-# print 'Solving constraint dos grupos'
-# if s.check() != sat:
-#     print 'Failed to solver constraint dos grupos'
-#     # sys.exit()
-# x1 = x
-# x = time.clock()
-# print x - x1
+    s.add_soft(c)
+s.maximize(max_grupos)
+print 'Solving constraint dos grupos'
+if s.check() != sat:
+    print 'Failed to solver constraint dos grupos'
+    # sys.exit()
+x1 = x
+x = time.clock()
+print x - x1
+
 
 s.add(um_turnoTP_c)
-soma_total = 0
-n_total = 0
-desvio = 0
-# s.add(capacidade_maxima_TP_c)
-# for c in capacidade_maxima_TP_c:
-#     s.add_soft(c)
-for uc in lista_capacidades:
-    for turno in lista_capacidades[uc]:
-        for i in range(len(slots[uc][turno])):
-            capacidade_turno = slots[uc][turno][i][3]
-            capacidade_atual = Sum(lista_capacidades[uc][turno])
-            soma_total += (capacidade_atual - capacidade_turno) ** 2
-            n_total += 1
-media_excesso = soma_total/n_total
-for uc in lista_capacidades:
-    for turno in lista_capacidades[uc]:
-        for i in range(len(slots[uc][turno])):
-            capacidade_turno = slots[uc][turno][i][3]
-            capacidade_atual = Sum(lista_capacidades[uc][turno])
-            desvio += (((capacidade_atual - capacidade_turno) ** 2) - media_excesso) ** 2
-desvio_padrao = desvio / n_total
-s.minimize(desvio_padrao)
 
+if sys.argv[3] == 'soft':
+    min_excessos = Sum([ Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] != suf_teoria ] )
+    for c in capacidade_maxima_TP_c:
+        s.add_soft(c)
+    s.minimize(min_excessos)
+else if sys.argv[3] == 'desvio':
+    soma_total = 0
+    n_total = 0
+    desvio = 0
+    for uc in lista_capacidades:
+        for turno in lista_capacidades[uc]:
+            for i in range(len(slots[uc][turno])):
+                capacidade_turno = slots[uc][turno][i][3]
+                capacidade_atual = Sum(lista_capacidades[uc][turno])
+                soma_total += (capacidade_atual - capacidade_turno) ** 2
+                n_total += 1
+    media_excesso = soma_total/n_total
+    for uc in lista_capacidades:
+        for turno in lista_capacidades[uc]:
+            for i in range(len(slots[uc][turno])):
+                capacidade_turno = slots[uc][turno][i][3]
+                capacidade_atual = Sum(lista_capacidades[uc][turno])
+                desvio += (((capacidade_atual - capacidade_turno) ** 2) - media_excesso) ** 2
+    desvio_padrao = desvio / n_total
+    s.minimize(desvio_padrao)
+else:
+    s.add(capacidade_maxima_TP_c)
 
 print 'Solving constraint capacidade maxima dos TPs'
 if s.check() != sat:
