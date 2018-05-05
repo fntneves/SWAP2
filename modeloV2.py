@@ -117,6 +117,7 @@ capacidade_maxima_TP_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno]
 
 capacidade_maxima_T_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] == suf_teoria ]
 
+min_excessos = Sum([ Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] != suf_teoria ] )
 # Aulas sem sobreposicoes
 # Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
 # Por ultimo, a soma dessa lista com as Ucs num determinado dia, numa determinada hora tem de ser no maximo 1, ou seja, tem de haver no maximo uma alocaçao
@@ -156,21 +157,16 @@ max_grupos = Sum( sum_grupos )
 print 'Numero de alunos: %s' % len(alunos)
 
 s = Optimize()
+s.set('maxres.max_core_size', 2)
+s.set('maxres.max_correction_set_size', 2)
+s.set('maxres.max_num_cores', 10000000)
+print s.help()
 
 x = time.clock()
 s.add(values_c)
 print 'Solving constraint 0 or 1'
 if s.check() != sat:
     print 'Failed to solver constraint 0 or 1'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
-s.add(um_turnoTP_c)
-print 'Solving constraint obrigatório um turno TP'
-if s.check() != sat:
-    print 'Failed to solver constraint obrigatório um turno TP'
     sys.exit()
 x1 = x
 x = time.clock()
@@ -184,15 +180,6 @@ if s.check() != sat:
 x1 = x
 x = time.clock()
 print x-x1
-
-s.add(um_turnoT_c)
-print 'Solving constraint tentar um turno T'
-if s.check() != sat:
-    print 'Failed to solver constraint tentar um turno t'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
 
 #s.set('timeout', 900000)
 s.add(um_turnoT_c)
@@ -217,16 +204,25 @@ x1 = x
 x = time.clock()
 print x - x1
 
-s.set('timeout', 900000 * 8) # 2 horas, 900000 sao 15 min
+s.set('timeout', 60000 * 30) # 30 min
 s.add(um_turnoTP_c)
-s.add(capacidade_maxima_TP_c)
-print 'Solving constraint capacidade maxima dos TPs'
-if s.check() != sat:
-    print 'Failed to solver constraint alocações nos TPs'
-    # sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
+# s.add(capacidade_maxima_TP_c)
+for c in capacidade_maxima_TP_c:
+    s.add_soft(c)
+# s.minimize(min_excessos)
+print 'A alocar os alunos dentro da capacidade maxima dos TPs sempre que possivel'
+try:
+    if s.check() != sat:
+        print 'Failed to solver constraint alocações nos TPs'
+        # sys.exit()
+    x1 = x
+    x = time.clock()
+    print x - x1
+    pass
+except :
+    print 'timeout ended with no optimal solution!'
+    m = s.model()
+    print m
 
 m = s.model()
 r = {}
