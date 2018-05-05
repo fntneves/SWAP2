@@ -189,7 +189,7 @@ print x-x1
 #s.set('timeout', 900000)
  # 2 slots, 900000 sao 15 min
 s.add(um_turnoT_c)
-#s.add(capacidade_maxima_T_c)
+# s.add(capacidade_maxima_T_c)
 s.maximize(max_Teoricas)
 print 'A Maximizar os turnos teoricos dentro das capacidades maximas'
 if s.check() != sat:
@@ -211,17 +211,29 @@ print x-x1
 # x = time.clock()
 # print x - x1
 
-# s.add(um_turnoTP_c)
-soma = 0
+s.add(um_turnoTP_c)
+soma_total = 0
+n_total = 0
+desvio = 0
 # s.add(capacidade_maxima_TP_c)
-for c in capacidade_maxima_TP_c:
-    s.add_soft(c)
+# for c in capacidade_maxima_TP_c:
+#     s.add_soft(c)
 for uc in lista_capacidades:
     for turno in lista_capacidades[uc]:
         for i in range(len(slots[uc][turno])):
-            dif = Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3]
-            soma += dif
-s.minimize(soma)
+            capacidade_turno = slots[uc][turno][i][3]
+            capacidade_atual = Sum(lista_capacidades[uc][turno])
+            soma_total += (capacidade_atual - capacidade_turno) ** 2
+            n_total += 1
+media_excesso = soma_total/n_total
+for uc in lista_capacidades:
+    for turno in lista_capacidades[uc]:
+        for i in range(len(slots[uc][turno])):
+            capacidade_turno = slots[uc][turno][i][3]
+            capacidade_atual = Sum(lista_capacidades[uc][turno])
+            desvio += (((capacidade_atual - capacidade_turno) ** 2) - media_excesso) ** 2
+desvio_padrao = desvio / n_total
+s.minimize(desvio_padrao)
 
 
 print 'Solving constraint capacidade maxima dos TPs'
