@@ -140,7 +140,7 @@ for al in presencas:
 sem_sobreposicoes_c = [ Sum(turnos[al][d][s]) <= 1 for al in turnos for d in turnos[al] for s in turnos[al][d] if len(turnos[al][d][s]) > 0 ]
 
 ######### grupos #######
-Carrega os grupos e cria a restrição dos grupos 
+#Carrega os grupos e cria a restrição dos grupos 
 
 grupos_c = []
 sum_grupos = []
@@ -191,7 +191,8 @@ x = time.clock()
 print x-x1
 
 
-# for c in grupos_c:
+
+for c in grupos_c:
     s.add_soft(c)
 s.maximize(max_grupos)
 print 'Solving constraint dos grupos'
@@ -210,7 +211,7 @@ if sys.argv[3] == 'soft':
     for c in capacidade_maxima_TP_c:
         s.add_soft(c)
     s.minimize(min_excessos)
-else if sys.argv[3] == 'desvio':
+elif sys.argv[3] == 'desvio':
     soma_total = 0
     n_total = 0
     desvio = 0
