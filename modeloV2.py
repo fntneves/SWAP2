@@ -186,15 +186,6 @@ x1 = x
 x = time.clock()
 print x-x1
 
-s.add(um_turnoT_c)
-print 'Solving constraint tentar um turno T'
-if s.check() != sat:
-    print 'Failed to solver constraint tentar um turno t'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
 #s.set('timeout', 900000)
  # 2 slots, 900000 sao 15 min
 s.add(um_turnoT_c)
@@ -220,17 +211,17 @@ print x-x1
 # x = time.clock()
 # print x - x1
 
-s.add(um_turnoTP_c)
+# s.add(um_turnoTP_c)
 soma = 0
-s.add(capacidade_maxima_TP_c)
-# for c in capacidade_maxima_T_c:
-#     s.add_soft(c)
+# s.add(capacidade_maxima_TP_c)
+for c in capacidade_maxima_TP_c:
+    s.add_soft(c)
 for uc in lista_capacidades:
     for turno in lista_capacidades[uc]:
         for i in range(len(slots[uc][turno])):
-            dif = slots[uc][turno][i][3]-Sum(lista_capacidades[uc][turno])
+            dif = Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3]
             soma += dif
-#s.minimize(soma)
+s.minimize(soma)
 
 
 print 'Solving constraint capacidade maxima dos TPs'
