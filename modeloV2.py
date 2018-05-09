@@ -1,6 +1,9 @@
 # coding=utf-8
 import sys, json, pprint, time
-from z3 import *
+# from z3 import *
+from ortools.constraint_solver import pywrapcp
+
+solver = pywrapcp.Solver("schedule_shifts")
 
 alunos_json  = json.load(open(sys.argv[1]))
 horario_json = json.load(open(sys.argv[2]))
@@ -52,9 +55,9 @@ for elem in horario_json:
                     slots[codigo] = {}
                 turno = uc[codigo]['Turno']
                 if turno not in slots[codigo]:
-                    slots[codigo][turno] = [(n_dia,horaI,horaF,uc[codigo]['Capacidade'])]
+                    slots[codigo][turno] = [(n_dia,horaI,horaF, uc[codigo]['Capacidade'] )]
                 else:
-                    slots[codigo][turno] += [(n_dia,horaI,horaF,uc[codigo]['Capacidade'])]
+                    slots[codigo][turno] += [(n_dia,horaI,horaF, uc[codigo]['Capacidade'] )]
         if n_dia not in dias_slots:
             dias_slots[n_dia] = maximo_slot
     n_dia += 1
@@ -67,35 +70,33 @@ maximo_dia = n_dia
 n_al = 0
 n_uc = 0
 n_turno = 0
+max_nr = len(alunos) * 15 * 10
 
 for al in alunos:
+    n_al += 1
     if al not in presencas:
         presencas[al] = {}
     for uc in alunos[al]:
+        n_uc += 1
         if uc in slots:
             if uc not in presencas[al]:
                 presencas[al][uc] = {}
             for turno in slots[uc]:
-                presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
+                n_turno += 1
+                # presencas[al][uc][turno] = solver.BoolVar()
+                presencas[al][uc][turno] = solver.BoolVar("p_%i_%i_%i" % (n_al,n_uc,n_turno))
 
-##################### OBJECTIVOS ######################################
-
-max_Teoricas = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if uc[-2:] == suf_teoria ])
+presencas_flat = [ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] ]
 
 ##################### RESTRICOES ######################################
 
-#- Os valores possiveis sao 0 ou 1
-
-values_c = [ Or(presencas[al][uc][turno] == 0, presencas[al][uc][turno] == 1) for al in presencas for uc in presencas[al] for turno in presencas[al][uc]]
-
-
 #- Um aluno so pode ser atribuido a um e um so turno se for TP
 
-um_turnoTP_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1 for al in presencas for uc in presencas[al] if not (uc[-2:] == suf_teoria) ]
+um_turnoTP_c =  [ solver.Add(solver.Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1) for al in presencas for uc in presencas[al] if (uc[-2:] != suf_teoria) ]
 
 #- Um aluno so pode ser atribuido a so turno se for T, nao sendo obrigatório
 
-um_turnoT_c =  [ Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1 for al in presencas for uc in presencas[al] if uc[-2:] == suf_teoria]
+um_turnoT_c =  [ solver.Add(solver.Sum([ presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1) for al in presencas for uc in presencas[al] if (uc[-2:] == suf_teoria) ]
 
 #- O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
 
@@ -110,9 +111,9 @@ for al in presencas:
             else:
                 lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
 
-capacidade_maxima_TP_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] != suf_teoria ]
+capacidade_maxima_TP_c = [ solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(slots[uc][turno][i][3]*1.4) ) for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] != suf_teoria ]
 
-capacidade_maxima_T_c = [ Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] == suf_teoria ]
+capacidade_maxima_T_c = [ solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3]  ) for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] == suf_teoria ]
 
 # Aulas sem sobreposicoes
 # Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
@@ -137,123 +138,53 @@ for al in presencas:
                             turnos[al][d][s] += [ presencas[al][uc][t] ]
 #pprint.pprint(turnos)
 
-sem_sobreposicoes_c = [ Sum(turnos[al][d][s]) <= 1 for al in turnos for d in turnos[al] for s in turnos[al][d] if len(turnos[al][d][s]) > 0 ]
+sem_sobreposicoes_c = [ solver.Add(solver.Sum(turnos[al][d][s]) <= 1) for al in turnos for d in turnos[al] for s in turnos[al][d] if len(turnos[al][d][s]) > 0 ]
 
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
 
-grupos_c = []
-sum_grupos = []
-for uc in grupos_json:
-    for grupo in grupos_json[uc]:
-        al1 = grupos_json[uc][grupo][0]
-        grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
-        sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
+# grupos_c = []
+# sum_grupos = []
+# for uc in grupos_json:
+#     for grupo in grupos_json[uc]:
+#         al1 = grupos_json[uc][grupo][0]
+#         grupos_c += [solver.Add([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
+#         sum_grupos += [ If(solver.Add([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
 
-max_grupos = Sum( sum_grupos )
+# max_grupos = Sum( sum_grupos )
+
+##################### OBJECTIVOS ######################################
+
+obj_expr = solver.IntVar(0, 100000, "obj_expr")
+solver.Add(obj_expr == solver.Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if uc[-2:] == suf_teoria ]))
+max_Teoricas = solver.Maximize(obj_expr,1)
 
 ########################### SOLVER ############################
 print 'Numero de alunos: %s' % len(alunos)
 
-s = Optimize()
-
-#s.set('timeout', 300000)
-x = time.clock()
-s.add(values_c)
-print 'Solving constraint 0 or 1'
-if s.check() != sat:
-    print 'Failed to solver constraint 0 or 1'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
-s.add(sem_sobreposicoes_c)
-print 'Solving constraint sem sobreposicções'
-if s.check() != sat:
-    print 'Failed to solver constraint sem sobreposicções'
-    sys.exit()
-x1 = x
-x = time.clock()
-print x-x1
-
-#s.set('timeout', 900000)
- # 2 slots, 900000 sao 15 min
-s.add(um_turnoT_c)
-# s.add(capacidade_maxima_T_c)
-s.maximize(max_Teoricas)
-print 'A Maximizar os turnos teoricos dentro das capacidades maximas'
-if s.check() != sat:
-    print 'Failed to maximize turnos teoricos'
-    # sys.exit()
-x1 = x
-x = time.clock()
-print x-x1
-
-
-
-for c in grupos_c:
-    s.add_soft(c)
-s.maximize(max_grupos)
-print 'Solving constraint dos grupos'
-if s.check() != sat:
-    print 'Failed to solver constraint dos grupos'
-    # sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
-
-s.add(um_turnoTP_c)
-
-if sys.argv[3] == 'soft':
-    min_excessos = Sum([ Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno])) if uc[-2:] != suf_teoria ] )
-    for c in capacidade_maxima_TP_c:
-        s.add_soft(c)
-    s.minimize(min_excessos)
-elif sys.argv[3] == 'desvio':
-    soma_total = 0
-    n_total = 0
-    desvio = 0
-    for uc in lista_capacidades:
-        for turno in lista_capacidades[uc]:
-            for i in range(len(slots[uc][turno])):
-                capacidade_turno = slots[uc][turno][i][3]
-                capacidade_atual = Sum(lista_capacidades[uc][turno])
-                soma_total += (capacidade_atual - capacidade_turno) ** 2
-                n_total += 1
-    media_excesso = soma_total/n_total
-    for uc in lista_capacidades:
-        for turno in lista_capacidades[uc]:
-            for i in range(len(slots[uc][turno])):
-                capacidade_turno = slots[uc][turno][i][3]
-                capacidade_atual = Sum(lista_capacidades[uc][turno])
-                desvio += (((capacidade_atual - capacidade_turno) ** 2) - media_excesso) ** 2
-    desvio_padrao = desvio / n_total
-    s.minimize(desvio_padrao)
-else:
-    s.add(capacidade_maxima_TP_c)
-
-print 'Solving constraint capacidade maxima dos TPs'
-if s.check() != sat:
-    print 'Failed to solver constraint alocações nos TPs'
-    # sys.exit()
-x1 = x
-x = time.clock()
-print x - x1
-
-m = s.model()
-r = {}
-for al in presencas:
-    if al not in r:
-        r[al] = {}
-    for uc in presencas[al]:
-        if uc not in r[al]:
-            r[al][uc] = [] 
-        for turno in presencas[al][uc]:
-            aloc = m.evaluate(presencas[al][uc][turno])
-            if aloc == 1:
-                r[al][uc] += [turno]
+db = solver.Phase(presencas_flat, solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE)
+# collector = solver.LastSolutionCollector()
+# # Add the decision variables.
+# collector.Add(presencas_flat)
+# # Add the objective.
+# collector.AddObjective(obj_expr)
+limit = 0
+solver.Solve(db)
+if solver.NextSolution():
+    # best_solution = collector.SolutionCount() - 1
+    print 'found solution!'
+    r = {}
+    for al in presencas:
+        if al not in r:
+            r[al] = {}
+        for uc in presencas[al]:
+            if uc not in r[al]:
+                r[al][uc] = [] 
+            for turno in presencas[al][uc]:
+                aloc = presencas[al][uc][turno].Value()
+                # aloc = collector.Value(best_solution, presencas[al][uc][turno])
+                if aloc == 1:
+                    r[al][uc] += [turno]
 
 # #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
@@ -309,7 +240,7 @@ print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
 print 'Alunos não alocados a teoricas: '
-pprint.pprint(nao_alocados_t)
+# pprint.pprint(nao_alocados_t)
 print 'grupos nao juntos: '
 
 print 'Ucs com maior capacidade do que o suposto:'
