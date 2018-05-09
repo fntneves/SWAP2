@@ -157,7 +157,8 @@ for al in presencas:
         if uc not in r[al]:
             r[al][uc] = []
         for turno in presencas[al][uc]:
-            r[al][uc] += [turno]
+            if presencas[al][uc][turno] == 1:
+                r[al][uc] += [turno]
             #print '%s %s %s - %s' % (al,uc,turno,presencas[al][uc][turno].get_value())
             
 pprint.pprint(r)
