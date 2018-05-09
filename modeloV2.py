@@ -100,7 +100,7 @@ for al in presencas:
 for al in presencas:
     for uc in presencas[al]:
         if uc[-2:] == suf_teoria:
-            #solver.add(Sum([presencas[al][uc][turno] for turno in presencas[al][uc]]) <= 1)
+            #solver.add(Sum([presencas[al][uc][turno] for turno in presencas[al][uc]]) == 1)
             solver.add(Maximise(Sum([presencas[al][uc][turno] for turno in presencas[al][uc]])))
 
 # Aulas sem sobreposicoes
@@ -129,6 +129,24 @@ for al in turnos:
         for s in turnos[al][d]:
             solver.add(Sum(turnos[al][d][s]) <= 1)
 
+# #- O numero de alocacoes para turno nao pode execeder a capacidade do mesmo
+
+lista_capacidades = {}
+for al in presencas:
+    for uc in presencas[al]:
+        if uc not in lista_capacidades:
+            lista_capacidades[uc] = {}
+        for turno in presencas[al][uc]:
+            if turno not in lista_capacidades[uc]:
+                lista_capacidades[uc][turno] = [ presencas[al][uc][turno] ]
+            else:
+                lista_capacidades[uc][turno] += [ presencas[al][uc][turno] ]
+
+for uc in lista_capacidades:
+    for turno in lista_capacidades[uc]:
+        for i in range(len(slots[uc][turno])):
+            solver.add(Sum(lista_capacidades[uc][turno]) <= slots[uc][turno][i][3])
+
 ################## SOLVER ##############################
 print solver.load('SCIP').solve()
 r = {}
@@ -137,9 +155,9 @@ for al in presencas:
         r[al] = {}
     for uc in presencas[al]:
         if uc not in r[al]:
-            r[al][uc] = {}
+            r[al][uc] = []
         for turno in presencas[al][uc]:
-            r[al][uc][turno] = presencas[al][uc][turno].get_value()
+            r[al][uc] += [turno]
             #print '%s %s %s - %s' % (al,uc,turno,presencas[al][uc][turno].get_value())
             
 pprint.pprint(r)
@@ -308,14 +326,14 @@ for al in alunos:
 # #             if turno not in r[al][uc]:
 # #                 grupos_nao_juntos += [ uc+'_'+grupo+' : '+al ]
 
-# # ucs que ultrapassaram capacidade
-# ucs_maximo_capacidade = []
-# for uc in alocacoes_finais:
-#     for turno in alocacoes_finais[uc]:
-#         total = alocacoes_finais[uc][turno]
-#         for i in range(len(slots[uc][turno])):
-#             if total > slots[uc][turno][i][3]:
-#                 ucs_maximo_capacidade += [(uc,turno,total - slots[uc][turno][i][3])]
+# ucs que ultrapassaram capacidade
+ucs_maximo_capacidade = []
+for uc in alocacoes_finais:
+    for turno in alocacoes_finais[uc]:
+        total = alocacoes_finais[uc][turno]
+        for i in range(len(slots[uc][turno])):
+            if total > slots[uc][turno][i][3]:
+                ucs_maximo_capacidade += [(uc,turno,total - slots[uc][turno][i][3])]
 
 pprint.pprint(alocacoes_finais)
 # #pprint.pprint(r)
@@ -326,7 +344,7 @@ print 'Alunos não alocados a teoricas: '
 pprint.pprint(nao_alocados_t)
 # print 'grupos nao juntos: '
 
-# print 'Ucs com maior capacidade do que o suposto:'
-# pprint.pprint(ucs_maximo_capacidade)
+print 'Ucs com maior capacidade do que o suposto:'
+pprint.pprint(ucs_maximo_capacidade)
 # # pprint.pprint(grupos_nao_juntos)
 # #print s.statistics()
