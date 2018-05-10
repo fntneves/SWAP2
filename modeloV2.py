@@ -170,7 +170,13 @@ for al in turnos:
 ##################### OBJECTIVOS ######################################
 
 solver.Maximize(solver.Sum([presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc]]))
-#solver.Minimize(solver.Sum([solver.Sum(lista_capacidades[uc][turno]) - slots[uc][turno][i][3] for uc in lista_capacidades for turno in lista_capacidades[uc] for i in range(len(slots[uc][turno]))]))
+### Diminuir a diferença entre a uc com mais lotaçao e a que tem menos lotaçao
+# dif_lot = 0
+# for uc in lista_capacidades:
+#     t = solver.Sum([solver.Sum(lista_capacidades[uc][turno]) for turno in lista_capacidades[uc]])
+#     for turno in lista_capacidades[uc]:
+#         dif_lot += t - solver.Sum(lista_capacidades[uc][turno])
+# solver.Minimize(dif_lot)
 
 solver.Solve()
 print 'Total de alocações possiveis %s' % n_uc
