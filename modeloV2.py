@@ -156,14 +156,20 @@ for al in turnos:
 
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
-
-# grupos_c = []
-# sum_grupos = []
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         grupos_c += [solver.Add([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
-#         sum_grupos += [ If(solver.Add([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
+dicionario_grupos = {}
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        if (uc,grupo) not in dicionario_grupos:
+            dicionario_grupos[uc,grupo] = []
+        al = grupos_json[uc][grupo][0]
+        
+        for turno in presencas[al][uc]:
+            if presencas[al][uc][turno] == 1:
+                print '%s %s %s' % (al,uc,turno)
+                dicionario_grupos[uc,grupo] += [presencas[al][uc][turno]]
+                dicionario_grupos[uc,grupo] += [presencas[al1][uc][turno] for al1 in grupos_json[uc][grupo][1:]]
+                solver.Maximize(solver.Sum(dicionario_grupos[uc,grupo]))
+                break
 
 # max_grupos = Sum( sum_grupos )
 
@@ -194,9 +200,14 @@ for al in presencas:
             # aloc = collector.Value(best_solution, presencas[al][uc][turno])
             if aloc == 1:
                 r[al][uc] += [turno]
+for grupo in dicionario_grupos:
+    print 'Grupo: %s %s' % (grupo[0],grupo[1]),
+    for al in dicionario_grupos[grupo]:
+        print '%s - %s |' % (al,al.solution_value()), 
+    print '\n'
 
 print 'Time = %i ms' % solver.WallTime()
-#pprint.pprint(r)
+pprint.pprint(r)
 # #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
 n_tur = 0
@@ -224,7 +235,7 @@ for al in alunos:
         if not uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados:
             nao_alocados.append(al)
         if uc[-2:] == suf_teoria and len(r[al][uc]) == 0 and al not in nao_alocados_t:
-            nao_alocados_t.append(al)
+            nao_alocados_t.append((al,uc))
 
 # #calcular os grupos que ficaram juntos ou não
 # grupos_nao_juntos = []
@@ -249,9 +260,9 @@ pprint.pprint(alocacoes_finais)
 #pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
-pprint.pprint(nao_alocados)
+#pprint.pprint(nao_alocados)
 print 'Alunos não alocados a teoricas: '
-pprint.pprint(nao_alocados_t)
+#pprint.pprint(nao_alocados_t)
 print 'grupos nao juntos: '
 
 print 'Ucs com maior capacidade do que o suposto:'
