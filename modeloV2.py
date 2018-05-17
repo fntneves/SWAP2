@@ -117,15 +117,18 @@ for al in presencas:
 ### TPS ####
 for uc in lista_capacidades:
     for turno in lista_capacidades[uc]:
-       for i in range(len(slots[uc][turno])):
-            if uc[-2:] != suf_teoria:
-                solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(slots[uc][turno][i][3] * 1.12))
+        if uc[-2:] != suf_teoria:
+            maior = 0
+            for i in range(len(slots[uc][turno])):
+                maior = max(slots[uc][turno][i][3],maior)
+            solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(maior * 1.12))
 ### TEORICAS ####
 for uc in lista_capacidades:
     for turno in lista_capacidades[uc]:
-       for i in range(len(slots[uc][turno])):
-            if uc[-2:] == suf_teoria:
-                solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= solver.infinity())
+        if uc[-2:] == suf_teoria:
+            for i in range(len(slots[uc][turno])):
+                maior = max(slots[uc][turno][i][3],maior)
+            solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= solver.infinity())
 
 # Aulas sem sobreposicoes
 # Percorre todos os alunos e todas as ucs e junta todos os seus turnos num dicionario do tipo de acordo com o seu dia e hora, do tipo {Aluno:{Dia:{Hora:[Ucs]}}}
@@ -183,6 +186,7 @@ solver.Maximize(solver.Sum([presencas[al][uc][turno] for al in presencas for uc 
 # solver.Minimize(dif_lot)
 
 solucao = solver.Solve()
+
 if solucao != solver.OPTIMAL:
     print 'No solution found!'
     sys.exit()
@@ -211,7 +215,7 @@ for al in presencas:
 #     print '\n'
 
 print 'Time = %i ms' % solver.WallTime()
-#pprint.pprint(r)
+pprint.pprint(r)
 # #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
 n_tur = 0
