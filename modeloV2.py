@@ -78,6 +78,8 @@ for al in alunos:
             for turno in slots[uc]:
                 presencas[al][uc][turno] = Int('p_%s_%s_%s' % (al,uc,turno))
 
+
+
 ##################### OBJECTIVOS ######################################
 
 max_Teoricas = Sum([ presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc] if uc[-2:] == suf_teoria ])
