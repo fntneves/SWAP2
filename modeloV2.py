@@ -12,9 +12,12 @@ grupos_json = json.load(open('Data/grupos.json'))
 
 suf_teoria = '-T'
 
+
+
 alunos = {}
 slots = {}
 presencas = {}
+gruposCompletos = {}
 
 # Carrega alunos e as ucs em que estao inscritos para o dicionario alunos {"A82382:[Hxxxxxx,Hxxxxx]"}
 for al in alunos_json:
@@ -86,6 +89,21 @@ for al in alunos:
                 n_turno += 1
                 # presencas[al][uc][turno] = solver.BoolVar()
                 presencas[al][uc][turno] = solver.IntVar(0,1,"p_%s_%s_%s" % (n_al,n_uc,n_turno))
+
+n_uc2 = 0
+n_grupo = 0
+n_turno = 0
+for uc in grupos_json:
+    if uc not in gruposCompletos:
+        gruposCompletos[uc] = {}
+        n_uc2 += 1
+    for grupo in grupos_json[uc]:
+        n_grupo += 1
+        if grupo not in gruposCompletos[uc]:
+            gruposCompletos[uc][grupo] = {}
+            for turno in slots[uc]:
+                n_turno += 1
+                gruposCompletos[uc][grupo][turno] = solver.IntVar(0,1,"g_%s_%s_%s" % (n_uc2, n_grupo, n_turno))
 
 ##################### RESTRICOES ######################################
 
@@ -160,23 +178,24 @@ for al in turnos:
 
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
-# grupos_c = []
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         for t in presencas[al1][uc]:
-#             solver.Add(solver.Sum([presencas[al][uc][t] for al in grupos_json[uc][grupo][1:]]) == len(grupos_json[uc][grupo]))
-
-
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         grupos_c += [ And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]) for t in presencas[al1][uc] ]
-#         sum_grupos += [ If(And([ presencas[al1][uc][t] == presencas[al][uc][t] for al in grupos_json[uc][grupo][1:] ]),1,0) for t in presencas[al1][uc] ]
+grupos_c = []
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        for t in slots[uc]:
+            solver.Add(solver.Sum([ presencas[al][uc][t] for al in grupos_json[uc][grupo] ]) - (len(grupos_json[uc][grupo]) - 1) <= gruposCompletos[uc][grupo][t] )
+            for al in grupos_json[uc][grupo]:
+                solver.Add(presencas[al][uc][t] >= gruposCompletos[uc][grupo][t])
 
 ##################### OBJECTIVOS ######################################
 
-solver.Maximize(solver.Sum([presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc]]))
+#maximizar alocações nas teoricas
+max_teoricas = solver.Sum([presencas[al][uc][turno] for al in presencas for uc in presencas[al] for turno in presencas[al][uc]])
+
+# maximizar grupos juntos
+max_grupos = solver.Sum([ gruposCompletos[uc][grupo][turno] for uc in gruposCompletos for grupo in gruposCompletos[uc] for turno in gruposCompletos[uc][grupo] ])
+
+solver.Maximize(max_teoricas + max_grupos)
+
 ### Diminuir a diferença entre a uc com mais lotaçao e a que tem menos lotaçao
 # dif_lot = 0
 # for uc in lista_capacidades:
@@ -215,7 +234,7 @@ for al in presencas:
 #     print '\n'
 
 print 'Time = %i ms' % solver.WallTime()
-pprint.pprint(r)
+# pprint.pprint(r)
 # #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
 n_tur = 0
@@ -250,7 +269,6 @@ grupos_nao_juntos = []
 for uc in grupos_json:
     for grupo in grupos_json[uc]:
         al1 = grupos_json[uc][grupo][0]
-        # print '%s,%s' % (al1,uc)
         turno = r[al1][uc][0]
         for al in grupos_json[uc][grupo]:
             if turno not in r[al][uc]:
@@ -263,17 +281,17 @@ for uc in alocacoes_finais:
         total = alocacoes_finais[uc][turno]
         for i in range(len(slots[uc][turno])):
             if total > slots[uc][turno][i][3]:
-                ucs_maximo_capacidade += [(uc,turno,total - slots[uc][turno][i][3])]
+                ucs_maximo_capacidade += [(uc,turno,slots[uc][turno][i][3],total,total - slots[uc][turno][i][3])]
 
 pprint.pprint(alocacoes_finais)
-#pprint.pprint(r)
+# pprint.pprint(r)
 print 'Alunos alocados a todas as ucs: %s' % str(total_aloc)
 print 'Alunos não alocados a praticas: '
 pprint.pprint(nao_alocados)
 print 'Alunos não alocados a teoricas: '
 pprint.pprint(nao_alocados_t)
 print 'grupos nao juntos: '
-#pprint.pprint(grupos_nao_juntos)
+pprint.pprint(grupos_nao_juntos)
 print 'Ucs com maior capacidade do que o suposto:'
 pprint.pprint(ucs_maximo_capacidade)
 
@@ -311,4 +329,13 @@ for a in r:
         i += 1
         print '%s tem sobreposicoes' % a
 print '%s tem sobreposicoes' % i
-#print s.statistics()
+
+# escrever ficheiro enrollments
+out_file = open('enrollments.json', 'w')
+lista_enrollments = [] 
+for al in r:
+    for uc in r[al]:
+        if uc[-2:] != suf_teoria and uc[:6] != 'ALMOCO':
+            lista_enrollments.append({ 'student_id':al, 'course_id':uc, 'shift_id':r[al][uc][0] })
+
+json.dump(lista_enrollments, out_file)
