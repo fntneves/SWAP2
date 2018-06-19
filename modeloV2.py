@@ -161,11 +161,12 @@ for al in turnos:
 ######### grupos #######
 #Carrega os grupos e cria a restrição dos grupos 
 # grupos_c = []
-# for uc in grupos_json:
-#     for grupo in grupos_json[uc]:
-#         al1 = grupos_json[uc][grupo][0]
-#         for t in presencas[al1][uc]:
-#             solver.Add(solver.Sum([presencas[al][uc][t] for al in grupos_json[uc][grupo][1:]]) == len(grupos_json[uc][grupo]))
+for uc in grupos_json:
+    for grupo in grupos_json[uc]:
+        al1 = grupos_json[uc][grupo][0]
+        for t in presencas[al1][uc]:
+            solver.Maximize(solver.Add([solver.If(presencas[al1][uc][t] == presencas[al][uc][t],1,0) for al in grupos_json[uc][grupo][1:]]))
+
 
 
 # for uc in grupos_json:
@@ -215,7 +216,7 @@ for al in presencas:
 #     print '\n'
 
 print 'Time = %i ms' % solver.WallTime()
-pprint.pprint(r)
+# pprint.pprint(r)
 # #alunos alocados a todas as cadeiras que estao inscritos
 total_aloc = 0
 n_tur = 0
