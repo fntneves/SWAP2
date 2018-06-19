@@ -3,8 +3,8 @@
         "Segunda":[
             {"C1":{"HoraI":0,"HoraF":3,"Capacidade":2,"Turno":"TP1"}},
             {"C1":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP1"}},
-            {"C2":{"HoraI":0,"HoraF":3,"Capacidade":1,"Turno":"TP1"}},
-            {"C2":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP2"}},
+            {"C2":{"HoraI":0,"HoraF":3,"Capacidade":5,"Turno":"TP1"}},
+            {"C2":{"HoraI":4,"HoraF":7,"Capacidade":5,"Turno":"TP2"}},
             {"C3":{"HoraI":0,"HoraF":3,"Capacidade":2,"Turno":"TP1"}},
             {"C4":{"HoraI":4,"HoraF":7,"Capacidade":2,"Turno":"TP1"}}
         ]
