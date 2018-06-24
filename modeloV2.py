@@ -1,7 +1,7 @@
 # coding=utf-8
 import sys, json, pprint, time
-# from z3 import *
 from ortools.linear_solver import pywraplp
+
 
 
 solver = pywraplp.Solver("schedule_shifts", pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
@@ -338,5 +338,6 @@ for al in r:
     for uc in r[al]:
         if uc[-2:] != suf_teoria and uc[:6] != 'ALMOCO':
             lista_enrollments.append({ 'student_id':al, 'course_id':uc, 'shift_id':r[al][uc][0] })
+
 
 json.dump(lista_enrollments, out_file)
