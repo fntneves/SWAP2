@@ -136,9 +136,9 @@ for al in presencas:
 for uc in lista_capacidades:
     for turno in lista_capacidades[uc]:
         if uc[-2:] != suf_teoria:
-            maior = 0
+            maior = 1000
             for i in range(len(slots[uc][turno])):
-                maior = max(slots[uc][turno][i][3],maior)
+                maior = min(slots[uc][turno][i][3],maior)
             solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(maior * 1.12))
 ### TEORICAS ####
 for uc in lista_capacidades:
