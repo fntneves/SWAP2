@@ -12,5 +12,5 @@ jsonFinal = {
   'percentagem-excesso' : excesso
 }
 
-solver_input_file = open('solverInput.json', 'w')
+solver_input_file = open('Data/solverInput.json', 'w')
 json.dump(jsonFinal, solver_input_file)

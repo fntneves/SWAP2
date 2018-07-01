@@ -12,11 +12,11 @@ if sys.argv[1] == 'test':
     'percentagem-excesso' : 0
   }
 else:
-  jsonFinal = json.load(open('solverInput.json'))
+  jsonFinal = json.load(open('Data/solverInput.json'))
 
 
 # r = requests.post('http://127.0.0.1:5000/solver', json=jsonFinal)
-r = requests.post('https://rocky-brushlands-57811.herokuapp.com/solver', json=jsonFinal)
+r = requests.post('https://lei-uminho-swap2.herokuapp.com/solver', json=jsonFinal)
 
 print r.status_code
 print r.text
