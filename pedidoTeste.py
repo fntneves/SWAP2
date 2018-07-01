@@ -8,14 +8,15 @@ if sys.argv[1] == 'test':
   jsonFinal = {
     'alunos': alunos_json,
     'horario': horario_json,
-    'grupos': grupos_json
+    'grupos': grupos_json,
+    'percentagem-excesso' : 0
   }
-  print jsonFinal
 else:
   jsonFinal = json.load(open('solverInput.json'))
 
 
-r = requests.post('http://127.0.0.1:5000/solver', json=jsonFinal)
+# r = requests.post('http://127.0.0.1:5000/solver', json=jsonFinal)
+r = requests.post('https://rocky-brushlands-57811.herokuapp.com/solver', json=jsonFinal)
 
 print r.status_code
 print r.text

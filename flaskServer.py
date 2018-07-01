@@ -9,6 +9,7 @@ def solver(jsonObject):
     alunos_json  = jsonObject['alunos']
     horario_json = jsonObject['horario']
     grupos_json = jsonObject['grupos']
+    excesso = jsonObject['percentagem-excesso']
 
     suf_teoria = '-T'
 
@@ -125,16 +126,16 @@ def solver(jsonObject):
     for uc in lista_capacidades:
         for turno in lista_capacidades[uc]:
             if uc[-2:] != suf_teoria:
-                maior = 0
+                menor = 5000
                 for i in range(len(slots[uc][turno])):
-                    maior = max(slots[uc][turno][i][3],maior)
-                solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(maior * 1.12))
+                    menor = min(slots[uc][turno][i][3],menor)
+                solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= int(menor * ( 1 + (excesso / 100))) )
     ### TEORICAS ####
     for uc in lista_capacidades:
         for turno in lista_capacidades[uc]:
             if uc[-2:] == suf_teoria:
                 for i in range(len(slots[uc][turno])):
-                    maior = max(slots[uc][turno][i][3],maior)
+                    menor = min(slots[uc][turno][i][3],menor)
                 solver.Add(solver.Sum(lista_capacidades[uc][turno]) <= solver.infinity())
 
     # Aulas sem sobreposicoes
